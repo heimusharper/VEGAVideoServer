@@ -29,6 +29,10 @@ int HTTPServer::start()
           Image *image = FFImageHttpSink::instance().getImage();
           if (image) {
               evkeyvalq* outhead = evhttp_request_get_output_headers(req);
+
+              uint64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+              evhttp_add_header(outhead, "X-TimeStamp", std::to_string(time).c_str());
               evhttp_add_header(outhead, "Content-Type", "image/jpg");
               auto *OutBuf = evhttp_request_get_output_buffer(req);
               if (!OutBuf)
