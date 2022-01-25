@@ -5,10 +5,12 @@
 #include "FFH264DecoderInstance.h"
 #include <thread>
 #include "helper.h"
+#include <exiv2/exiv2.hpp>
+#include "MavContext.h"
 
 struct Image {
     char *image;
-    int size = 0;
+    long size = 0;
 
     ~Image() {
         delete [] image;

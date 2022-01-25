@@ -32,6 +32,7 @@ FIND_PATH(MAVLINK_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/c_library_v2)
 
 find_package(Event REQUIRED)
+find_package(exiv2 REQUIRED)
 
 IF (NOT MAVLINK_INCLUDE_DIR)
     message("Failed build mavlink")
@@ -52,7 +53,6 @@ pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
     libavutil
 )
 
-#target_include_directories(${PROJECT_NAME} PUBLIC ${LIBEVENT_INCLUDE_DIR})
 
 add_executable(VEGAVideoServer
     helper.h
@@ -69,7 +69,12 @@ add_executable(VEGAVideoServer
 
     main.cpp)
 
+target_include_directories(${PROJECT_NAME} PUBLIC ${LIBEVENT_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${EXIV2_INCLUDE_DIR})
+
+
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEVENT_LIB})
 target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::LIBAV)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${EXIV2_LIBRARIES})
 
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
