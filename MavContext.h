@@ -1,0 +1,74 @@
+#ifndef MAVCONTEXT_H
+#define MAVCONTEXT_H
+#include <stdint.h>
+
+class MavContext
+{
+public:
+
+    // https://exiftool.org/TagNames/DJI.html
+
+    static MavContext &instance();
+
+    float roll() const;
+    void setRoll(float newRoll);
+    float pitch() const;
+    void setPitch(float newPitch);
+    float yaw() const;
+    void setYaw(float newYaw);
+    void setAngles(float r, float p, float y);
+
+    float speedX() const;
+    void setSpeedX(float newSpeedX);
+
+    float speedY() const;
+    void setSpeedY(float newSpeedY);
+
+    float speedZ() const;
+    void setSpeedZ(float newSpeedZ);
+    void setSpeeds(float x, float y, float z);
+
+    double lat() const;
+    void setLat(double newLat);
+
+    double lon() const;
+    void setLon(double newLon);
+
+    double alt() const;
+    void setAlt(double newAlt);
+
+    float gmbRoll() const;
+    void setGmbRoll(float newGmbRoll);
+    float gmbPitch() const;
+    void setGmbPitch(float newGmbPitch);
+    float gmbYaw() const;
+    void setGmbYaw(float newGmbYaw);
+    void setGimbal(float r, float p, float y);
+
+    uint32_t timestamp() const;
+    void setTimestamp(uint32_t newTimestamp);
+
+private:
+    MavContext();
+
+    float m_roll = 0;
+    float m_pitch = 0;
+    float m_yaw = 0;
+
+    float m_speedX = 0;
+    float m_speedY = 0;
+    float m_speedZ = 0;
+
+    double m_lat = 0;
+    double m_lon = 0;
+    double m_alt = 0;
+
+    float m_gmbRoll = 0;
+    float m_gmbPitch = 0;
+    float m_gmbYaw = 0;
+
+    uint32_t m_timestamp = 0;
+
+};
+
+#endif // MAVCONTEXT_H

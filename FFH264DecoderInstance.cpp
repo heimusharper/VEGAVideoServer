@@ -93,7 +93,7 @@ void FFH264DecoderInstance::run()
                                 m_jpegContext->flags |= AV_CODEC_FLAG_QSCALE;
                                 // m_jpegContext->qmin = 30;
                                 //  m_jpegContext->qmax = 31;
-                                m_jpegContext->time_base = m_videoCo    decContext->time_base;
+                                m_jpegContext->time_base = m_videoCodecContext->time_base;
                                 if (int err = avcodec_open2(m_jpegContext, jpegCodec, NULL) < 0) {
                                     std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
                                 } else {
@@ -119,15 +119,17 @@ void FFH264DecoderInstance::run()
                                     if (av_image_alloc(dstframe->data, dstframe->linesize, frame->width, frame->height, (AVPixelFormat)frame->format, 0) >= 0) {
                                         sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
                                         int got;
-                                        if (avcodec_encode_video2(m_jpegContext, &m_packet, dstframe, &got) < 0)
+                                        if (avcodec_encode_video2(m_jpegContext, &m_packet, dstframe, &got) >= 0)
                                         {
+                                            m_lastFrame = std::chrono::system_clock::now();
                                         }
                                     }
                                     av_frame_free(&dstframe);
                                 } else {
                                     int got;
-                                    if (avcodec_encode_video2(m_jpegContext, &m_packet, frame, &got) < 0)
+                                    if (avcodec_encode_video2(m_jpegContext, &m_packet, frame, &got) >= 0)
                                     {
+                                        m_lastFrame = std::chrono::system_clock::now();
                                     }
                                 }
                             }

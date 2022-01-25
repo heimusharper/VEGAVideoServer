@@ -22,6 +22,8 @@ Image *FFImageHttpSink::getImage()
 {
     if (!m_sink)
         return nullptr;
+    if (m_sink->lifetime() > 1000)
+        return nullptr;
     AVPacket frame = m_sink->takeFrame();
     Image *image = new Image;
     image->image = new char[frame.size];

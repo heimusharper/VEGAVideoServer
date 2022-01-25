@@ -56,12 +56,16 @@ pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
 
 add_executable(VEGAVideoServer
     helper.h
+    MavContext.h MavContext.cpp
+    MavlinkParser.h MavlinkParser.cpp
     FFImageFrame.h FFImageFrame.cpp
     FFDecoderInstance.h
     FFPlayerInstance.h FFPlayerInstance.cpp
     FFH264DecoderInstance.h FFH264DecoderInstance.cpp
     FFImageHttpSink.h FFImageHttpSink.cpp
     HTTPServer.h HTTPServer.cpp
+
+    MavUDP.h MavUDP.cpp
 
     main.cpp)
 

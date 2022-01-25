@@ -25,8 +25,15 @@ public:
         av_packet_ref(&packet, &m_packet);
         return packet;
     }
+    int lifetime() const
+    {
+        const std::chrono::time_point<std::chrono::system_clock> now =
+            std::chrono::system_clock::now();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFrame).count();
+    }
 
 protected:
+    std::chrono::time_point<std::chrono::system_clock> m_lastFrame;
     std::mutex m_frameLock;
     AVPacket m_packet;
 };
