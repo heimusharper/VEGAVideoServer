@@ -86,13 +86,14 @@ void FFH264DecoderInstance::run()
                                 std::cout << "Create mJPEG encoder...";
                                 AVCodec *jpegCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
                                 m_jpegContext = avcodec_alloc_context3(jpegCodec);
+                                m_jpegContext->bit_rate = m_videoCodecContext->bit_rate;
                                 m_jpegContext->pix_fmt = AV_PIX_FMT_YUVJ420P; // m_videoCodecContext->pix_fmt;
                                 m_jpegContext->height = frame->height;
                                 m_jpegContext->width = frame->width;
                                 m_jpegContext->flags |= AV_CODEC_FLAG_QSCALE;
                                 // m_jpegContext->qmin = 30;
                                 //  m_jpegContext->qmax = 31;
-                                m_jpegContext->time_base = m_videoCodecContext->time_base;
+                                m_jpegContext->time_base = m_videoCo    decContext->time_base;
                                 if (int err = avcodec_open2(m_jpegContext, jpegCodec, NULL) < 0) {
                                     std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
                                 } else {
@@ -115,7 +116,7 @@ void FFH264DecoderInstance::run()
                                     dstframe->format = AV_PIX_FMT_YUV420P;
                                     dstframe->width  = frame->width;
                                     dstframe->height = frame->height;
-                                    if (av_image_alloc(frame->data, frame->linesize, frame->width, frame->height, (AVPixelFormat)frame->format, 0) >= 0) {
+                                    if (av_image_alloc(dstframe->data, dstframe->linesize, frame->width, frame->height, (AVPixelFormat)frame->format, 0) >= 0) {
                                         sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
                                         int got;
                                         if (avcodec_encode_video2(m_jpegContext, &m_packet, dstframe, &got) < 0)

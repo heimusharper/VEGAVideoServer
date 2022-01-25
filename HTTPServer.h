@@ -15,7 +15,6 @@ struct HTTPServerConfiguration
 {
     std::string address = "127.0.0.1";
     uint16_t port = 8088;
-    int threadsCount = 4;
 
     HTTPServerConfiguration() = default;
 };

@@ -18,9 +18,7 @@ int HTTPServer::start()
         std::cerr << "Failed to init libevent." << std::endl;
         return -1;
       }
-      char const SrvAddress[] = "127.0.0.1";
-      std::uint16_t SrvPort = 5555;
-      std::unique_ptr<evhttp, decltype(&evhttp_free)> Server(evhttp_start(SrvAddress, SrvPort), &evhttp_free);
+      std::unique_ptr<evhttp, decltype(&evhttp_free)> Server(evhttp_start(m_config.address.c_str(), m_config.port), &evhttp_free);
       if (!Server)
       {
         std::cerr << "Failed to init http server." << std::endl;
