@@ -6,6 +6,7 @@
 #include "FFPlayerInstance.h"
 #include <thread>
 #include <atomic>
+#include <mutex>
 #include <queue>
 #include <boost/lockfree/spsc_queue.hpp>
 
@@ -18,11 +19,13 @@ public:
     virtual ~FFDecoderInstance()
     {
     }
-    AVPacket takeFrame()
+    AVPacket *takeFrame()
     {
         std::lock_guard g(m_frameLock);
-        AVPacket packet;
-        av_packet_ref(&packet, &m_packet);
+        if (!m_packet)
+            return nullptr;
+        AVPacket *packet = av_packet_alloc();
+        av_packet_ref(packet, m_packet);
         return packet;
     }
     int lifetime() const
@@ -35,7 +38,7 @@ public:
 protected:
     std::chrono::time_point<std::chrono::system_clock> m_lastFrame;
     std::mutex m_frameLock;
-    AVPacket m_packet;
+    AVPacket *m_packet = nullptr;
 };
 
 #endif // FFDECODERINSTANCE_H

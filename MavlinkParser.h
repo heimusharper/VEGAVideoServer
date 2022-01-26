@@ -9,6 +9,8 @@
 #include <chrono>
 #include <iostream>
 #include <list>
+#include <mutex>
+#include <unistd.h>
 
 class MavlinkParser
 {

@@ -77,7 +77,7 @@ void FFPlayerInstance::run()
             else
                 av_packet_free(&pkt);
 
-            usleep(1000);
+            usleep(10);
         }
     }
     if (input_format_ctx)

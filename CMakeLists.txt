@@ -11,6 +11,24 @@ ELSE()
 ENDIF()
 
 
+# ASAN CONFIGURE
+SET(ASAN_ADDRESS True CACHE BOOL "Compile address sanitizer")
+SET(ASAN_THREADS False CACHE BOOL "Compile thread sanitizer")
+SET(ASAN_UB True CACHE BOOL "Compile undefined behaviour sanitizer")
+
+IF (${ASAN_ADDRESS})
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak -g")
+    SET(CMAKE_CXX_LINKER_FLAGS_DEBUG "${CMAKE_CXX_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak")
+ENDIF ()
+IF(${ASAN_THREADS})
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=thread -g")
+    SET(CMAKE_CXX_LINKER_FLAGS_DEBUG "${CMAKE_CXX_LINKER_FLAGS_DEBUG} -fsanitize=thread")
+ENDIF()
+IF (${ASAN_UB})
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined -g")
+    SET(CMAKE_CXX_LINKER_FLAGS_DEBUG "${CMAKE_CXX_LINKER_FLAGS_DEBUG} -fsanitize=undefined")
+ENDIF()
+
 SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)

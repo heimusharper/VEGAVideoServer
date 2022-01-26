@@ -29,11 +29,13 @@ Image *FFImageHttpSink::getImage()
         return nullptr;
     if (m_sink->lifetime() > 1000)
         return nullptr;
-    AVPacket frame = m_sink->takeFrame();
+    AVPacket *frame = m_sink->takeFrame();
+    if (!frame)
+        return nullptr;
     Image *out = nullptr;
     try {
         Exiv2::Image::AutoPtr eximage =
-                Exiv2::ImageFactory::open((Exiv2::byte *)frame.data, frame.size);
+                Exiv2::ImageFactory::open((Exiv2::byte *)frame->data, frame->size);
         // av_packet_unref(&frame);
         if (eximage.get() == 0) {
             return nullptr;
@@ -48,8 +50,6 @@ Image *FFImageHttpSink::getImage()
             int lat = int(MavContext::instance().lat() * 10000000);
             int lon = int(MavContext::instance().lon() * 10000000);
             int alt = int(MavContext::instance().alt() * 1000);
-
-            std::cout << "Exif Lat " << lat << " Lon " << lon << " A " << alt << std::endl << std::flush;
 
             exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (lat < 0) ? "S" : "N";
             exifData["Exif.GPSInfo.GPSLongitudeRef"] = (lon < 0) ? "W" : "E";
@@ -97,8 +97,6 @@ Image *FFImageHttpSink::getImage()
             xmpData["Xmp.drone-dji.GimbalYawDegree"] = MavContext::instance().gmbYaw();
 
             eximage->setXmpData(xmpData);
-
-            std::cout << "XMP " << xmpData["Xmp.drone-dji.FlightXSpeed"].toFloat() << std::endl << std::flush;
         }
 
         eximage->writeMetadata();
@@ -113,6 +111,6 @@ Image *FFImageHttpSink::getImage()
     } catch (Exiv2::Error &e){
         std::cout << "Caught Exiv2 exception '" << e.what() << std::endl;
     }
-    av_packet_unref(&frame);
+    av_packet_unref(frame);
     return out;
 }

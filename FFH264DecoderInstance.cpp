@@ -20,7 +20,7 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string &address) :
 
                 if (stream->codec->codec_id == AV_CODEC_ID_H264)
                 {
-                    av_opt_set(m_videoCodecContext->priv_data, "preset", "ultrafast", 0);
+                    av_opt_set(m_videoCodecContext->priv_data, "preset", """ultrafast", 0);
                     av_opt_set(m_videoCodecContext->priv_data, "tune", "zerolatency", 0);
                     av_opt_set(m_videoCodecContext->priv_data, "crf", "23", 0);
                 }
@@ -56,6 +56,10 @@ FFH264DecoderInstance::~FFH264DecoderInstance()
 
 void FFH264DecoderInstance::run()
 {
+    int w = 0;
+    int h = 0;
+    uint8_t *buffer = nullptr;
+
     SwsContext* yuv420_conversion = nullptr;
     std::queue<AVPacket*> packets;
     while (!m_stop.load())
@@ -83,6 +87,10 @@ void FFH264DecoderInstance::run()
                         if (decErr == 0)
                         {
                             if (!m_jpegContext) {
+
+                                AVDictionary *options = nullptr;
+                                av_dict_set(&options, "fflags", "nobuffer", 0);
+
                                 std::cout << "Create mJPEG encoder...";
                                 AVCodec *jpegCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
                                 m_jpegContext = avcodec_alloc_context3(jpegCodec);
@@ -90,11 +98,14 @@ void FFH264DecoderInstance::run()
                                 m_jpegContext->pix_fmt = AV_PIX_FMT_YUVJ420P; // m_videoCodecContext->pix_fmt;
                                 m_jpegContext->height = frame->height;
                                 m_jpegContext->width = frame->width;
+                                // m_jpegContext->sample_aspect_ratio = m_videoCodecContext->sample_aspect_ratio;
+                                m_jpegContext->time_base = AVRational{1, 25};// m_videoCodecContext->time_base;
                                 m_jpegContext->flags |= AV_CODEC_FLAG_QSCALE;
-                                // m_jpegContext->qmin = 30;
-                                //  m_jpegContext->qmax = 31;
-                                m_jpegContext->time_base = m_videoCodecContext->time_base;
-                                if (int err = avcodec_open2(m_jpegContext, jpegCodec, NULL) < 0) {
+                                m_jpegContext->flags |= AVFMT_FLAG_NOBUFFER | AVFMT_FLAG_FLUSH_PACKETS;
+                                // m_jpegContext->qmin = 1;
+                                // m_jpegContext->qmax = 2;
+                                av_opt_set(m_jpegContext->priv_data, "q", "30", 0);
+                                if (int err = avcodec_open2(m_jpegContext, jpegCodec, &options) < 0) {
                                     std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
                                 } else {
                                     if (m_videoCodecContext->pix_fmt != AV_PIX_FMT_YUV420P)
@@ -106,28 +117,38 @@ void FFH264DecoderInstance::run()
                             }
 
                             std::lock_guard m(m_frameLock);
-                            av_packet_unref(&m_packet);
-                            av_init_packet(&m_packet);
                             if (m_jpegContext) {
+                                if (m_packet)
+                                    av_packet_unref(m_packet);
+                                else
+                                    m_packet = av_packet_alloc();
+                                // av_init_packet(&m_packet);
                                 if (yuv420_conversion)
                                 {
                                     // convert to AV_PIX_FMT_YUV420P
                                     AVFrame *dstframe = av_frame_alloc();
-                                    dstframe->format = AV_PIX_FMT_YUV420P;
+                                    dstframe->format = AV_PIX_FMT_YUV422P;
                                     dstframe->width  = frame->width;
                                     dstframe->height = frame->height;
-                                    if (av_image_alloc(dstframe->data, dstframe->linesize, frame->width, frame->height, (AVPixelFormat)frame->format, 0) >= 0) {
+                                    if (buffer == nullptr || w != dstframe->width || h != dstframe->height)
+                                    {
+                                        if (buffer)
+                                            av_free(buffer);
+                                        int size = avpicture_get_size((AVPixelFormat)dstframe->format, dstframe->width, dstframe->height);
+                                        buffer = (uint8_t*)av_malloc(size);
+                                    }
+                                    if (buffer)
+                                    {
+                                        avpicture_fill((AVPicture*)dstframe, buffer, (AVPixelFormat)dstframe->format, dstframe->width, dstframe->height);
                                         sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
                                         int got;
-                                        if (avcodec_encode_video2(m_jpegContext, &m_packet, dstframe, &got) >= 0)
-                                        {
+                                        if (avcodec_encode_video2(m_jpegContext, m_packet, dstframe, &got) >= 0)
                                             m_lastFrame = std::chrono::system_clock::now();
-                                        }
                                     }
                                     av_frame_free(&dstframe);
                                 } else {
                                     int got;
-                                    if (avcodec_encode_video2(m_jpegContext, &m_packet, frame, &got) >= 0)
+                                    if (avcodec_encode_video2(m_jpegContext, m_packet, frame, &got) >= 0)
                                     {
                                         m_lastFrame = std::chrono::system_clock::now();
                                     }
@@ -140,10 +161,10 @@ void FFH264DecoderInstance::run()
                 }
                 av_packet_free(&pkt);
             }
-            usleep(1000);
+            usleep(100);
         } else {
             // long sleep
-            usleep(1000000);
+            usleep(100);
         }
     }
     if (yuv420_conversion)
