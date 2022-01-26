@@ -21,7 +21,7 @@ void MavlinkParser::read(char *c, int n)
     mavlink_status_t status;
     mavlink_message_t msg;
     for (int i = 0; i < n; i++)
-        if (mavlink_parse_char(DIFFERENT_CHANNEL, (uint8_t)c[i], &msg, &status) == 0)
+        if (mavlink_parse_char(DIFFERENT_CHANNEL, (uint8_t)c[i], &msg, &status) != 0)
             read(msg);
 }
 
@@ -75,7 +75,8 @@ void MavlinkParser::read(const mavlink_message_t &msg)
                     hrt.autopilot == MAV_AUTOPILOT_PX4)
             {
                 UAV_ID = msg.sysid;
-                // UAV_COMPID = msg.compid;
+                UAV_COMPID = msg.compid;
+                processIntervals();
             }
         }
     }
@@ -122,5 +123,28 @@ void MavlinkParser::read(const mavlink_message_t &msg)
         default:
             break;
         }
+    }
+}
+
+void MavlinkParser::processIntervals()
+{
+    std::list<std::pair<int, int>> msgInterval;
+    msgInterval.push_back(std::make_pair(MAVLINK_MSG_ID_GLOBAL_POSITION_INT, 10));
+    msgInterval.push_back(std::make_pair(MAVLINK_MSG_ID_ATTITUDE, 10));
+    msgInterval.push_back(std::make_pair(MAVLINK_MSG_ID_MOUNT_STATUS, 10));
+
+    for (const std::pair<int, int> &p : msgInterval) {
+        int rate = 0;
+        if (p.second < 0)
+            rate = -1;
+        else if (p.second == 0)
+            rate = 0;
+        else
+            rate = (int)(1000000.f / (float)p.second);
+        mavlink_message_t message;
+        mavlink_msg_command_long_pack_chan(
+        GCS_ID, 0, DIFFERENT_CHANNEL, &message, UAV_ID, UAV_COMPID, MAV_CMD_SET_MESSAGE_INTERVAL,
+                    0, p.first, rate, 0, 0, 0, 0, 0);
+        m_messageToSend.push(message);
     }
 }

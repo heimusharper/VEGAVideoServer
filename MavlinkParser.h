@@ -7,6 +7,8 @@
 #include "MavContext.h"
 #include <atomic>
 #include <chrono>
+#include <iostream>
+#include <list>
 
 class MavlinkParser
 {
@@ -26,6 +28,8 @@ private:
 
     void ping();
     void read(const mavlink_message_t &msg);
+
+    void processIntervals();
 
 private:
     const int GCS_ID = 127;
