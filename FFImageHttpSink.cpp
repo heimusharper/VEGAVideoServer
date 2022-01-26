@@ -1,5 +1,10 @@
 #include "FFImageHttpSink.h"
 
+FFImageHttpSink::FFImageHttpSink()
+{
+    Exiv2::XmpProperties::registerNs("http://ns.drone-dji.com/", "drone-dji");
+}
+
 FFImageHttpSink::~FFImageHttpSink()
 {
     if (m_sink)
@@ -25,27 +30,26 @@ Image *FFImageHttpSink::getImage()
     if (m_sink->lifetime() > 1000)
         return nullptr;
     AVPacket frame = m_sink->takeFrame();
-    Image *image = new Image;
-    image->image = new char[frame.size];
-    image->size = frame.size;
-    memcpy(image->image, frame.data, frame.size);
-    av_packet_unref(&frame);
-
+    Image *out = nullptr;
     try {
         Exiv2::Image::AutoPtr eximage =
-                Exiv2::ImageFactory::open((Exiv2::byte *)image->image, image->size);
-        if (eximage.get() == 0)
+                Exiv2::ImageFactory::open((Exiv2::byte *)frame.data, frame.size);
+        // av_packet_unref(&frame);
+        if (eximage.get() == 0) {
             return nullptr;
-        eximage->setTypeSupported(1, Exiv2::mdExif);
+        }
+        eximage->setTypeSupported(1, Exiv2::mdExif | Exiv2::mdXmp);
         eximage->readMetadata();
-        Exiv2::ExifData &exifData = eximage->exifData();
 
         {
+            Exiv2::ExifData &exifData = eximage->exifData();
             // GPS
 
             int lat = int(MavContext::instance().lat() * 10000000);
             int lon = int(MavContext::instance().lon() * 10000000);
             int alt = int(MavContext::instance().alt() * 1000);
+
+            std::cout << "Exif Lat " << lat << " Lon " << lon << " A " << alt << std::endl << std::flush;
 
             exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (lat < 0) ? "S" : "N";
             exifData["Exif.GPSInfo.GPSLongitudeRef"] = (lon < 0) ? "W" : "E";
@@ -70,73 +74,45 @@ Image *FFImageHttpSink::getImage()
 
             alt_r->value_.push_back(std::make_pair(alt, 1000));
             exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"), alt_r.get());
+
+            eximage->setExifData(exifData);
         }
         {
+            Exiv2::XmpData &xmpData = eximage->xmpData();
             // DJI
 
             // speeds
-
-            exifData["Xmp.drone-dji.FlightXSpeed"] = 0;
-            Exiv2::URationalValue::AutoPtr xspd_r(new Exiv2::URationalValue);
-            xspd_r->value_.push_back(std::make_pair(int(MavContext::instance().speedX() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"), xspd_r.get());
-
-            exifData["Xmp.drone-dji.FlightYSpeed"] = 0;
-            Exiv2::URationalValue::AutoPtr yspd_r(new Exiv2::URationalValue);
-            yspd_r->value_.push_back(std::make_pair(int(MavContext::instance().speedY() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Xmp.drone-dji.FlightYSpeed"), yspd_r.get());
-
-            exifData["Xmp.drone-dji.FlightZSpeed"] = 0;
-            Exiv2::URationalValue::AutoPtr zspd_r(new Exiv2::URationalValue);
-            zspd_r->value_.push_back(std::make_pair(int(MavContext::instance().speedZ() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Xmp.drone-dji.FlightZSpeed"), zspd_r.get());
-
+            xmpData["Xmp.drone-dji.FlightXSpeed"] = MavContext::instance().speedX();
+            xmpData["Xmp.drone-dji.FlightYSpeed"] = MavContext::instance().speedY();
+            xmpData["Xmp.drone-dji.FlightZSpeed"] = MavContext::instance().speedZ();
 
             // angles
-
-            exifData["Xmp.drone-dji.FlightPitchDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr pdgr_r(new Exiv2::URationalValue);
-            pdgr_r->value_.push_back(std::make_pair(int(MavContext::instance().pitch() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.FlightPitchDegree"), pdgr_r.get());
-
-            exifData["Xmp.drone-dji.FlightYawDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr ydgr_r(new Exiv2::URationalValue);
-            ydgr_r->value_.push_back(std::make_pair(int(MavContext::instance().yaw() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.FlightYawDegree"), ydgr_r.get());
-
-            exifData["Xmp.drone-dji.FlightRollDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr rdgr_r(new Exiv2::URationalValue);
-            rdgr_r->value_.push_back(std::make_pair(int(MavContext::instance().roll() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.FlightRollDegree"), rdgr_r.get());
+            xmpData["Xmp.drone-dji.FlightPitchDegree"] = MavContext::instance().pitch();
+            xmpData["Xmp.drone-dji.FlightRollDegree"] = MavContext::instance().roll();
+            xmpData["Xmp.drone-dji.FlightYawDegree"] = MavContext::instance().yaw();
 
             // gimbal
+            xmpData["Xmp.drone-dji.GimbalPitchDegree"] = MavContext::instance().gmbPitch();
+            xmpData["Xmp.drone-dji.GimbalRollDegree"] = MavContext::instance().gmbRoll();
+            xmpData["Xmp.drone-dji.GimbalYawDegree"] = MavContext::instance().gmbYaw();
 
-            exifData["Xmp.drone-dji.GimbalPitchDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr pgdgr_r(new Exiv2::URationalValue);
-            pgdgr_r->value_.push_back(std::make_pair(int(MavContext::instance().gmbPitch() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GimbalPitchDegree"), pgdgr_r.get());
+            eximage->setXmpData(xmpData);
 
-            exifData["Xmp.drone-dji.GimbalRollDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr rgdgr_r(new Exiv2::URationalValue);
-            rgdgr_r->value_.push_back(std::make_pair(int(MavContext::instance().gmbRoll() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GimbalRollDegree"), rgdgr_r.get());
-
-            exifData["Xmp.drone-dji.GimbalYawDegree"] = 0;
-            Exiv2::URationalValue::AutoPtr ygdgr_r(new Exiv2::URationalValue);
-            ygdgr_r->value_.push_back(std::make_pair(int(MavContext::instance().gmbYaw() * 100.), 100));
-            exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GimbalYawDegree"), ygdgr_r.get());
-
+            std::cout << "XMP " << xmpData["Xmp.drone-dji.FlightXSpeed"].toFloat() << std::endl << std::flush;
         }
 
-        eximage->setExifData(exifData);
         eximage->writeMetadata();
+
+        int file_size = eximage->io().size();
+        eximage->io().seek(0,Exiv2::BasicIo::beg);
+        Exiv2::DataBuf buff = eximage->io().read(file_size);
+        out = new Image;
+        out->size = file_size;
+        out->image = new char[file_size];
+        memcpy(out->image, buff.pData_, file_size);
     } catch (Exiv2::Error &e){
         std::cout << "Caught Exiv2 exception '" << e.what() << std::endl;
-        return nullptr;
     }
-    return image;
-}
-
-FFImageHttpSink::FFImageHttpSink()
-{
+    av_packet_unref(&frame);
+    return out;
 }
