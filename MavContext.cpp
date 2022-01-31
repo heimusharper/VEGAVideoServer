@@ -11,6 +11,77 @@ MavContext::MavContext()
 
 }
 
+int MavContext::zoom() const
+{
+    return m_zoom;
+}
+
+void MavContext::setZoom(int newZoom)
+{
+    m_zoom = newZoom;
+}
+
+int MavContext::camOrientationEXIF() const
+{
+    return m_camOrientationEXIF;
+}
+
+void MavContext::setCamOrientationEXIF(int newCamOrientationEXIF)
+{
+    m_camOrientationEXIF = newCamOrientationEXIF;
+}
+
+float MavContext::yResolution() const
+{
+    return m_yResolution;
+}
+
+void MavContext::setYResolution(float newYResolution)
+{
+    m_yResolution = newYResolution;
+}
+
+float MavContext::xResolution() const
+{
+    return m_xResolution;
+}
+
+void MavContext::setXResolution(float newXResolution)
+{
+    m_xResolution = newXResolution;
+}
+
+float MavContext::crop() const
+{
+    return m_crop;
+}
+
+void MavContext::setCrop(float newCrop)
+{
+    m_crop = newCrop;
+}
+
+float MavContext::focalLength() const
+{
+    return m_focalLength;
+}
+
+void MavContext::setFocalLength(float newFocalLength)
+{
+    m_focalLength = newFocalLength;
+}
+
+void MavContext::setHomeAlt(float newHomeAlt)
+{
+    m_homeAlt = newHomeAlt;
+    geo::HeightSource::instance().setDefaultHeight(m_homeAlt);
+}
+
+float MavContext::homeAlt() const
+{
+    return m_homeAlt;
+}
+
 uint32_t MavContext::timestamp() const
 {
     return m_timestamp;

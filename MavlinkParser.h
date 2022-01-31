@@ -47,6 +47,8 @@ private:
     std::mutex m_messageMutex;
     std::thread *m_ping = nullptr;
     std::atomic_bool m_stop;
+
+    uint16_t m_gpsFixType = GPS_FIX_TYPE::GPS_FIX_TYPE_NO_GPS;
 };
 
 #endif // MAVLINKPARSER_H

@@ -43,13 +43,15 @@ Image *FFImageHttpSink::getImage()
         eximage->setTypeSupported(1, Exiv2::mdExif | Exiv2::mdXmp);
         eximage->readMetadata();
 
+        Exiv2::ExifData &exifData = eximage->exifData();
+        Exiv2::XmpData &xmpData = eximage->xmpData();
         {
-            Exiv2::ExifData &exifData = eximage->exifData();
             // GPS
 
             int lat = int(MavContext::instance().lat() * 10000000);
             int lon = int(MavContext::instance().lon() * 10000000);
-            int alt = int(MavContext::instance().alt() * 1000);
+            int32_t alt = geo::HeightSource::instance().at(
+                        geo::Coords3D(MavContext::instance().lat(), MavContext::instance().lon()));
 
             exifData["Exif.GPSInfo.GPSLatitudeRef"]  = (lat < 0) ? "S" : "N";
             exifData["Exif.GPSInfo.GPSLongitudeRef"] = (lon < 0) ? "W" : "E";
@@ -75,10 +77,41 @@ Image *FFImageHttpSink::getImage()
             alt_r->value_.push_back(std::make_pair(alt, 1000));
             exifData.add(Exiv2::ExifKey("Exif.GPSInfo.GPSAltitude"), alt_r.get());
 
-            eximage->setExifData(exifData);
         }
         {
-            Exiv2::XmpData &xmpData = eximage->xmpData();
+            // camera config
+            Exiv2::URationalValue::AutoPtr focal(new Exiv2::URationalValue);
+            focal->value_.push_back(std::make_pair(int(MavContext::instance().focalLength() * 100), 100));
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLength"), focal.get());
+
+            // 32 mm equivalent
+            Exiv2::URationalValue::AutoPtr focal32(new Exiv2::URationalValue);
+            focal32->value_.push_back(std::make_pair(int((MavContext::instance().focalLength() /
+                                                          MavContext::instance().crop())  * 100), 100));
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLengthIn35mmFormat"), focal32.get());
+
+            // resolution
+            Exiv2::URationalValue::AutoPtr xres(new Exiv2::URationalValue);
+            xres->value_.push_back(std::make_pair(int(MavContext::instance().xResolution() * 100), 100));
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneXResolution"), xres.get());
+            Exiv2::URationalValue::AutoPtr yres(new Exiv2::URationalValue);
+            yres->value_.push_back(std::make_pair(int(MavContext::instance().yResolution() * 100), 100));
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneYResolution"), yres.get());
+            Exiv2::UShortValue::AutoPtr resUnit(new Exiv2::UShortValue);
+            resUnit->value_.push_back(3);
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneResolutionUnit"), resUnit.get());
+
+            // orientation
+            Exiv2::UShortValue::AutoPtr oritent(new Exiv2::UShortValue);
+            oritent->value_.push_back(3);
+            exifData.add(Exiv2::ExifKey("Exif.Photo.Orientation"), oritent.get());
+
+            // zoom
+            Exiv2::URationalValue::AutoPtr zoom(new Exiv2::URationalValue);
+            zoom->value_.push_back(std::make_pair(int(MavContext::instance().zoom()), 1));
+            exifData.add(Exiv2::ExifKey("Exif.Photo.DigitalZoomRatio"), zoom.get());
+        }
+        {
             // DJI
 
             // speeds
@@ -99,6 +132,7 @@ Image *FFImageHttpSink::getImage()
             eximage->setXmpData(xmpData);
         }
 
+        eximage->setExifData(exifData);
         eximage->writeMetadata();
 
         int file_size = eximage->io().size();

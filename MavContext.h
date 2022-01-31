@@ -1,6 +1,7 @@
 #ifndef MAVCONTEXT_H
 #define MAVCONTEXT_H
 #include <stdint.h>
+#include <HeightSource.h>
 
 class MavContext
 {
@@ -48,6 +49,27 @@ public:
     uint32_t timestamp() const;
     void setTimestamp(uint32_t newTimestamp);
 
+    float homeAlt() const;
+    void setHomeAlt(float newHomeAlt);
+
+    float focalLength() const;
+    void setFocalLength(float newFocalLength);
+
+    float crop() const;
+    void setCrop(float newCrop);
+
+    float xResolution() const;
+    void setXResolution(float newXResolution);
+
+    float yResolution() const;
+    void setYResolution(float newYResolution);
+
+    int camOrientationEXIF() const;
+    void setCamOrientationEXIF(int newCamOrientationEXIF);
+
+    int zoom() const;
+    void setZoom(int newZoom);
+
 private:
     MavContext();
 
@@ -68,6 +90,18 @@ private:
     float m_gmbYaw = 0;
 
     uint32_t m_timestamp = 0;
+
+    float m_homeAlt = 0;
+
+    float m_focalLength = 50;
+    float m_crop = 2;
+
+    float m_xResolution = 0;
+    float m_yResolution = 0;
+
+    int m_camOrientationEXIF = 1;
+
+    int m_zoom = 1;
 
 };
 

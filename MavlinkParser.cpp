@@ -120,6 +120,40 @@ void MavlinkParser::read(const mavlink_message_t &msg)
                                              static_cast<float>(mnt.pointing_c) / 100.f);
             break;
         }
+        case MAVLINK_MSG_ID_GPS_RAW_INT:
+        {
+            mavlink_gps_raw_int_t gps;
+            mavlink_msg_gps_raw_int_decode(&msg, &gps);
+            if (gps.fix_type >= GPS_FIX_TYPE_3D_FIX && m_gpsFixType < GPS_FIX_TYPE_3D_FIX)
+            {
+                // request home altitude
+                mavlink_message_t message;
+                mavlink_msg_command_long_pack_chan(
+                GCS_ID, 0, DIFFERENT_CHANNEL, &message, UAV_ID, UAV_COMPID, MAV_CMD_GET_HOME_POSITION,
+                            0, 0, 0, 0, 0, 0, 0, 0);
+                m_messageToSend.push(message);
+            }
+            m_gpsFixType = gps.fix_type;
+            break;
+        }
+        case MAVLINK_MSG_ID_HOME_POSITION:
+        {
+            mavlink_home_position_t home;
+            mavlink_msg_home_position_decode(&msg, &home);
+            MavContext::instance().setHomeAlt(home.altitude);
+            break;
+        }
+        case MAVLINK_MSG_ID_DATA32: {
+            mavlink_data32_t data;
+            mavlink_msg_data32_decode(&msg, &data);
+            if (data.type == 0 && data.len == 32) {
+                // get Rustam gimbal zoom
+                int zoom = 0;
+                memcpy(&zoom, data.data, sizeof(int));
+                MavContext::instance().setZoom(zoom - 169);
+            }
+            break;
+        }
         default:
             break;
         }

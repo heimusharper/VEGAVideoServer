@@ -7,6 +7,7 @@
 #include "helper.h"
 #include <exiv2/exiv2.hpp>
 #include "MavContext.h"
+#include <HeightSource.h>
 
 struct Image {
     char *image;

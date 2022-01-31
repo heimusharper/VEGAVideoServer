@@ -2,6 +2,8 @@
 #include "HTTPServer.h"
 #include <algorithm>
 #include "MavUDP.h"
+#include <HeightSource.h>
+#include <HeightSourceHGT1M.h>
 
 char* getCmdOption(char ** begin, char ** end, const std::string & option)
 {
@@ -28,6 +30,12 @@ void showHelp()
     std::cout << " --mav-host [127.0.0.1] -- mavproxy udp host" << std::endl;
     std::cout << " --mav-port [14550] -- mavproxy udp port" << std::endl;
     std::cout << " --mav-gcs [127] -- GCS ID [1-254]" << std::endl;
+    std::cout << " --cam-focal-length -- video camera focal length" << std::endl;
+    std::cout << " --cam-crop-factor -- camera matrix crop factor" << std::endl;
+    std::cout << " --cam-x-resolution -- camera X resolution px/cm" << std::endl;
+    std::cout << " --cam-y-resolution -- camera Y resolution px/cm" << std::endl;
+    std::cout << " --cam-orientation [1] -- camera orientation in EXIF orientation codes" << std::endl;
+    std::cout << " --relief -- relief sources path" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -42,8 +50,43 @@ int main(int argc, char *argv[])
     if (!cmdOptionExists(argv, argv + argc, "--src"))
     {
         showHelp();
-        return 0;
+        return -1;
     }
+
+    // configure
+    if (cmdOptionExists(argv, argv + argc, "--cam-focal-length"))
+        MavContext::instance().setFocalLength(std::stof(std::string(getCmdOption(argv, argv + argc, "--cam-focal-length"))));
+    else {
+        std::cout << "missed --cam-focal-length param" << std::endl;
+        return -1;
+    }
+    if (cmdOptionExists(argv, argv + argc, "--cam-crop-factor"))
+        MavContext::instance().setCrop(std::stof(std::string(getCmdOption(argv, argv + argc, "--cam-crop-factor"))));
+    else {
+        std::cout << "missed --cam-crop-factor param" << std::endl;
+        return -1;
+    }
+    if (cmdOptionExists(argv, argv + argc, "--cam-x-resolution") && cmdOptionExists(argv, argv + argc, "--cam-y-resolution")) {
+        MavContext::instance().setXResolution(std::stof(std::string(getCmdOption(argv, argv + argc, "--cam-x-resolution"))));
+        MavContext::instance().setYResolution(std::stof(std::string(getCmdOption(argv, argv + argc, "--cam-y-resolution"))));
+    } else {
+        std::cout << "missed --cam-[x,y]-resolution param" << std::endl;
+        return -1;
+    }
+    if (cmdOptionExists(argv, argv + argc, "--cam-orientation"))
+        MavContext::instance().setCamOrientationEXIF(
+                    std::stof(std::string(getCmdOption(argv, argv + argc, "--cam-orientation"))));
+    // relief
+    if (cmdOptionExists(argv, argv + argc, "--relief"))
+    {
+        geo::HeightSourceHGT1M *hgt1 = new geo::HeightSourceHGT1M(
+                    std::filesystem::path(std::string(getCmdOption(argv, argv + argc, "--relief"))));
+        geo::HeightSource::instance().setInterface(hgt1);
+    } else {
+        std::cout << "missed --relief param" << std::endl;
+        return -1;
+    }
+
 
     // video source
     //
@@ -61,6 +104,8 @@ int main(int argc, char *argv[])
         mav_port = std::stoi(std::string(getCmdOption(argv, argv + argc, "--mav-port")));
     if (cmdOptionExists(argv, argv + argc, "--mav-gcs"))
         mav_gcs = std::stoi(std::string(getCmdOption(argv, argv + argc, "--mav-gcs")));
+
+
     MavUDP udp(mav_host, mav_port, mav_gcs);
 
     // HTTP server
