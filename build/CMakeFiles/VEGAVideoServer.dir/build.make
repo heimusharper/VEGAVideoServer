@@ -298,6 +298,12 @@ VEGAVideoServer: CMakeFiles/VEGAVideoServer.dir/HTTPServer.cpp.o
 VEGAVideoServer: CMakeFiles/VEGAVideoServer.dir/MavUDP.cpp.o
 VEGAVideoServer: CMakeFiles/VEGAVideoServer.dir/main.cpp.o
 VEGAVideoServer: CMakeFiles/VEGAVideoServer.dir/build.make
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_container.so
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_program_options.so
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_log_setup.so
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_thread.so
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_system.so
+VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libboost_chrono.so
 VEGAVideoServer: /usr/local/lib/libGeoInterface.so
 VEGAVideoServer: /usr/lib/libevent.so
 VEGAVideoServer: /usr/lib/aarch64-linux-gnu/libexiv2.so

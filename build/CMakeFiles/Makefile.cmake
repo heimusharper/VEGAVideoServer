@@ -10,6 +10,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "../CMakeLists.txt"
   "CMakeFiles/3.10.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeSystem.cmake"
+  "../cmake/FindBoost.cmake"
   "../cmake/FindEvent.cmake"
   "../cmake/FindExiv.cmake"
   "../cmake/FindGdal.cmake"

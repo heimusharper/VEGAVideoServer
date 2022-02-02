@@ -1587,9 +1587,11 @@ helper.h
 /home/unmanned/git/VEGAVideoServer/helper.h
 atomic
 -
-boost/lockfree/spsc_queue.hpp
+boost/chrono/chrono.hpp
 -
-chrono
+boost/chrono/system_clocks.hpp
+-
+boost/lockfree/spsc_queue.hpp
 -
 exception
 -
@@ -1707,15 +1709,15 @@ unistd.h
 -
 
 /home/unmanned/git/VEGAVideoServer/helper.h
-libavformat/avformat.h
--
 libavcodec/avcodec.h
 -
 libavdevice/avdevice.h
 -
-libswscale/swscale.h
+libavformat/avformat.h
 -
 libavutil/imgutils.h
+-
+libswscale/swscale.h
 -
 string
 -

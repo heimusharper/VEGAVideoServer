@@ -21,6 +21,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "."
   "../"
   "../c_library_v2"
+  "/usr/include/boost"
   "/usr/include/gdal"
   "/usr/local/include"
   "/usr/include/aarch64-linux-gnu"
