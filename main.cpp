@@ -37,6 +37,8 @@ void showHelp()
     std::cout << " --cam-orientation [1] -- camera orientation in EXIF orientation codes" << std::endl;
     std::cout << " --relief -- relief sources path" << std::endl;
     std::cout << " --sync -- sync video DTS/PTS if [src] is file" << std::endl;
+    std::cout << " --out_width -- output frame width" << std::endl;
+    std::cout << " --out_height -- output frame height" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -90,9 +92,15 @@ int main(int argc, char *argv[])
 
     // video
     //
+    int videoWidth = 0;
+    int videoHeight = 0;
+    if (cmdOptionExists(argv, argv + argc, "--out_width"))
+        videoWidth = std::stoi(std::string(getCmdOption(argv, argv + argc, "--out_width")));
+    if (cmdOptionExists(argv, argv + argc, "--out_height"))
+        videoHeight = std::stoi(std::string(getCmdOption(argv, argv + argc, "--out_height")));
     bool sync = cmdOptionExists(argv, argv + argc, "--sync");
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
-    FFImageHttpSink::instance().create(video, sync);
+    FFImageHttpSink::instance().create(video, sync, videoWidth, videoHeight);
 
     // MavProxy
     //

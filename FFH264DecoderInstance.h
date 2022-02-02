@@ -10,7 +10,7 @@ extern "C"
 class FFH264DecoderInstance : public FFDecoderInstance
 {
 public:
-    FFH264DecoderInstance(const std::string& address, bool sync);
+    FFH264DecoderInstance(const std::string& address, bool sync, int w, int h);
     FFH264DecoderInstance(const FFH264DecoderInstance&c) = delete;
     virtual ~FFH264DecoderInstance();
 
@@ -20,6 +20,8 @@ private:
 
 private:
     bool m_sync;
+    int m_targetW;
+    int m_targetH;
     std::atomic_bool m_stop;
     std::thread *m_mainThread;
 

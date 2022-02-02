@@ -1,8 +1,10 @@
 #include "FFH264DecoderInstance.h"
 
-FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync)
+FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync, int w, int h)
     : FFDecoderInstance()
     , m_sync(sync)
+    , m_targetW(w)
+    , m_targetH(h)
 {
     m_player = new FFPlayerInstance(address, m_sync,
         [this](AVStream* stream) -> bool {
@@ -87,6 +89,21 @@ void FFH264DecoderInstance::run()
                         int decErr = avcodec_receive_frame(m_videoCodecContext, frame);
                         if (decErr == 0)
                         {
+                            int targetWidth = frame->width;
+                            int targetHeight = frame->height;
+
+                            if (m_targetH == 0 && m_targetW > 0) {
+                                // width priority
+                                targetHeight = targetHeight * ((float)m_targetW / (float)targetWidth);
+                                targetWidth = m_targetW;
+                            } else if (m_targetW == 0 && m_targetH > 0) {
+                                targetWidth = targetWidth * ((float)m_targetH / (float)targetHeight);
+                                targetHeight = m_targetH;
+                            } else if (m_targetH > 0 && m_targetW > 0) {
+                                targetHeight = m_targetH;
+                                targetWidth = m_targetW;
+                            }
+
                             if (!m_jpegContext) {
 
                                 AVDictionary *options = nullptr;
@@ -97,8 +114,8 @@ void FFH264DecoderInstance::run()
                                 m_jpegContext = avcodec_alloc_context3(jpegCodec);
                                 m_jpegContext->bit_rate = m_videoCodecContext->bit_rate;
                                 m_jpegContext->pix_fmt = AV_PIX_FMT_YUVJ420P; // m_videoCodecContext->pix_fmt;
-                                m_jpegContext->height = frame->height;
-                                m_jpegContext->width = frame->width;
+                                m_jpegContext->height = targetHeight;
+                                m_jpegContext->width = targetWidth;
                                 // m_jpegContext->sample_aspect_ratio = m_videoCodecContext->sample_aspect_ratio;
                                 m_jpegContext->time_base = AVRational{1, 25};// m_videoCodecContext->time_base;
                                 m_jpegContext->flags |= AV_CODEC_FLAG_QSCALE;
@@ -109,12 +126,10 @@ void FFH264DecoderInstance::run()
                                 if (int err = avcodec_open2(m_jpegContext, jpegCodec, &options) < 0) {
                                     std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
                                 } else {
-                                    if (m_videoCodecContext->pix_fmt != AV_PIX_FMT_YUV420P)
-                                        yuv420_conversion = sws_getContext(frame->width, frame->height, (AVPixelFormat) frame->format,
-                                                                           frame->width, frame->height, AV_PIX_FMT_YUV420P,
-                                                                           SWS_BICUBIC, NULL, NULL, NULL);
+                                    yuv420_conversion = sws_getContext(frame->width, frame->height, (AVPixelFormat)frame->format,
+                                        targetWidth, targetHeight, AV_PIX_FMT_YUV420P,
+                                        SWS_BICUBIC, NULL, NULL, NULL);
                                 }
-
                             }
 
                             std::lock_guard m(m_frameLock);
@@ -123,20 +138,21 @@ void FFH264DecoderInstance::run()
                                     av_packet_unref(m_packet);
                                 else
                                     m_packet = av_packet_alloc();
-                                // av_init_packet(&m_packet);
                                 if (yuv420_conversion)
                                 {
                                     // convert to AV_PIX_FMT_YUV420P
                                     AVFrame *dstframe = av_frame_alloc();
-                                    dstframe->format = AV_PIX_FMT_YUV422P;
-                                    dstframe->width  = frame->width;
-                                    dstframe->height = frame->height;
+                                    dstframe->format = AV_PIX_FMT_YUV420P;
+                                    dstframe->width = targetWidth;
+                                    dstframe->height = targetHeight;
                                     if (buffer == nullptr || w != dstframe->width || h != dstframe->height)
                                     {
                                         if (buffer)
                                             av_free(buffer);
                                         int size = avpicture_get_size((AVPixelFormat)dstframe->format, dstframe->width, dstframe->height);
                                         buffer = (uint8_t*)av_malloc(size);
+                                        w = dstframe->width;
+                                        h = dstframe->height;
                                     }
                                     if (buffer)
                                     {

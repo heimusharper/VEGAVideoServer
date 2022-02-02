@@ -17,10 +17,10 @@ FFImageHttpSink &FFImageHttpSink::instance()
     return s;
 }
 
-void FFImageHttpSink::create(const std::string& str, bool sync)
+void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h)
 {
 
-    m_sink = new FFH264DecoderInstance(str, sync);
+    m_sink = new FFH264DecoderInstance(str, sync, w, h);
 }
 
 Image *FFImageHttpSink::getImage()
