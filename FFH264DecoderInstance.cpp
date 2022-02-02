@@ -1,10 +1,7 @@
 #include "FFH264DecoderInstance.h"
 
 FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync, int w, int h)
-    : FFDecoderInstance()
-    , m_sync(sync)
-    , m_targetW(w)
-    , m_targetH(h)
+    : FFDecoderInstance(sync, w, h)
 {
     m_player = new FFPlayerInstance(address, m_sync,
         [this](AVStream* stream) -> bool {
@@ -94,12 +91,16 @@ void FFH264DecoderInstance::run()
 
                             if (m_targetH == 0 && m_targetW > 0) {
                                 // width priority
-                                targetHeight = targetHeight * ((float)m_targetW / (float)targetWidth);
+                                m_scaleFactor = (float)m_targetW / (float)targetWidth;
+                                targetHeight = targetHeight * m_scaleFactor;
                                 targetWidth = m_targetW;
                             } else if (m_targetW == 0 && m_targetH > 0) {
-                                targetWidth = targetWidth * ((float)m_targetH / (float)targetHeight);
+                                m_scaleFactor = (float)m_targetH / (float)targetHeight;
+                                targetWidth = targetWidth * m_scaleFactor;
                                 targetHeight = m_targetH;
                             } else if (m_targetH > 0 && m_targetW > 0) {
+                                m_scaleFactor = std::min((float)m_targetW / (float)targetWidth,
+                                    (float)m_targetH / (float)targetHeight);
                                 targetHeight = m_targetH;
                                 targetWidth = m_targetW;
                             }

@@ -19,9 +19,6 @@ private:
     void run();
 
 private:
-    bool m_sync;
-    int m_targetW;
-    int m_targetH;
     std::atomic_bool m_stop;
     std::thread *m_mainThread;
 

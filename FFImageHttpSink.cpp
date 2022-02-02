@@ -29,9 +29,10 @@ Image *FFImageHttpSink::getImage()
         return nullptr;
     if (m_sink->lifetime() > 1000)
         return nullptr;
-    AVPacket *frame = m_sink->takeFrame();
+    AVPacket* frame = m_sink->takeFrame();
     if (!frame)
         return nullptr;
+    const float scaleFactor = m_sink->scaleFactor();
     Image *out = nullptr;
     try {
         Exiv2::Image::AutoPtr eximage =
@@ -85,26 +86,38 @@ Image *FFImageHttpSink::getImage()
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLength"), focal.get());
 
             // 32 mm equivalent
-            /*Exiv2::URationalValue::AutoPtr focal32(new Exiv2::URationalValue);
+            Exiv2::URationalValue::AutoPtr focal32(new Exiv2::URationalValue);
             focal32->value_.push_back(std::make_pair(int((MavContext::instance().focalLength() /
                                                           MavContext::instance().crop())  * 100), 100));
-            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLengthIn35mmFormat"), focal32.get());*/
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLengthIn35mmFilm"), focal32.get());
 
             // resolution
             Exiv2::URationalValue::AutoPtr xres(new Exiv2::URationalValue);
-            xres->value_.push_back(std::make_pair(int(MavContext::instance().xResolution() * 100), 100));
+            xres->value_.push_back(std::make_pair(int(MavContext::instance().xResolution() * 100 * scaleFactor), 100));
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneXResolution"), xres.get());
             Exiv2::URationalValue::AutoPtr yres(new Exiv2::URationalValue);
-            yres->value_.push_back(std::make_pair(int(MavContext::instance().yResolution() * 100), 100));
+            yres->value_.push_back(std::make_pair(int(MavContext::instance().yResolution() * 100 * scaleFactor), 100));
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneYResolution"), yres.get());
             Exiv2::UShortValue::AutoPtr resUnit(new Exiv2::UShortValue);
             resUnit->value_.push_back(3);
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneResolutionUnit"), resUnit.get());
 
+            if (std::abs(scaleFactor - 1.f) < 0.000001) {
+                const int w = m_sink->width();
+                const int h = m_sink->height();
+                // image dim
+                Exiv2::ULongValue::AutoPtr width(new Exiv2::ULongValue);
+                width->value_.push_back(w);
+                exifData.add(Exiv2::ExifKey("Exif.Photo.PixelXDimension"), width.get());
+                Exiv2::ULongValue::AutoPtr height(new Exiv2::ULongValue);
+                height->value_.push_back(h);
+                exifData.add(Exiv2::ExifKey("Exif.Photo.PixelYDimension"), height.get());
+            }
+
             // orientation
-            /*Exiv2::UShortValue::AutoPtr oritent(new Exiv2::UShortValue);
+            Exiv2::UShortValue::AutoPtr oritent(new Exiv2::UShortValue);
             oritent->value_.push_back(3);
-            exifData.add(Exiv2::ExifKey("Exif.Photo.Orientation"), oritent.get());*/
+            exifData.add(Exiv2::ExifKey("Exif.Image.Orientation"), oritent.get());
 
             // zoom
             Exiv2::URationalValue::AutoPtr zoom(new Exiv2::URationalValue);
