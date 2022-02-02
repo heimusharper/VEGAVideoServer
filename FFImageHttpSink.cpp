@@ -41,7 +41,9 @@ Image *FFImageHttpSink::getImage()
         if (eximage.get() == 0) {
             return nullptr;
         }
+#if EXIV2_TEST_VERSION(0,27,0)
         eximage->setTypeSupported(1, Exiv2::mdExif | Exiv2::mdXmp);
+#endif
         eximage->readMetadata();
 
         Exiv2::ExifData &exifData = eximage->exifData();

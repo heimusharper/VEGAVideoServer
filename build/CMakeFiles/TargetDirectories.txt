@@ -1,3 +1,0 @@
-/home/unmanned/git/VEGAVideoServer/build/CMakeFiles/rebuild_cache.dir
-/home/unmanned/git/VEGAVideoServer/build/CMakeFiles/VEGAVideoServer.dir
-/home/unmanned/git/VEGAVideoServer/build/CMakeFiles/edit_cache.dir
