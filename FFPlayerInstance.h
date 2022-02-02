@@ -3,8 +3,9 @@
 
 #include "helper.h"
 #include <atomic>
+#include <boost/chrono/chrono.hpp>
+#include <boost/chrono/system_clocks.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
-#include <chrono>
 #include <exception>
 #include <functional>
 #include <iostream>

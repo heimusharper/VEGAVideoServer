@@ -72,7 +72,7 @@ void FFPlayerInstance::run()
             avformat_free_context(input_format_ctx);
             usleep(1000000);
         } else {
-            auto start = std::chrono::high_resolution_clock::now();
+            auto start = boost::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();
             int err = av_read_frame(input_format_ctx, pkt);
             if (err >= 0 && pkt->stream_index == videoStreamIndex && m_packets.write_available()) {
@@ -86,8 +86,8 @@ void FFPlayerInstance::run()
                     frameTime = f_time;
                 } else {
                 }
-                auto stop = std::chrono::high_resolution_clock::now();
-                int workTime = duration_cast<std::chrono::microseconds>(stop - start).count();
+                auto stop = boost::chrono::high_resolution_clock::now();
+                int workTime = boost::chrono::duration_cast<boost::chrono::microseconds>(stop - start).count();
                 sleepTime -= workTime;
                 usleep(((sleepTime > 0) ? sleepTime : 1));
                 m_packets.push(pkt);
