@@ -1,12 +1,13 @@
 #include "FFH264DecoderInstance.h"
 
-FFH264DecoderInstance::FFH264DecoderInstance(const std::string &address) :
-    FFDecoderInstance()
+FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync)
+    : FFDecoderInstance()
+    , m_sync(sync)
 {
-    m_player = new FFPlayerInstance(address,
-                                    [this](AVStream*stream) -> bool {
-        std::lock_guard g(m_codecContextLocker);
-        //if (stream->codec->codec_id == AV_CODEC_ID_H264) {
+    m_player = new FFPlayerInstance(address, m_sync,
+        [this](AVStream* stream) -> bool {
+            std::lock_guard g(m_codecContextLocker);
+            //if (stream->codec->codec_id == AV_CODEC_ID_H264) {
             AVCodecParameters *codparam = avcodec_parameters_alloc();
             if (int err = avcodec_parameters_from_context(codparam, stream->codec) >= 0) {
                 std::cout << "Create H264 decoder...";
@@ -35,10 +36,10 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string &address) :
                 }
             } else
                 std::cout << "failed create new decoder" << AVHelper::av2str(err);
-        //} else
-        //    std::cout << "failed detect codec [h264, ]";
-        return false;
-    });
+            //} else
+            //    std::cout << "failed detect codec [h264, ]";
+            return false;
+        });
 
     m_stop.store(false);
     m_mainThread = new std::thread(&FFH264DecoderInstance::run, this);

@@ -1,9 +1,10 @@
 #include "FFPlayerInstance.h"
 
-FFPlayerInstance::FFPlayerInstance(const std::string &address,
-                                   std::function<bool (AVStream *)> create) :
-    m_address(address),
-    m_fnCreate(create)
+FFPlayerInstance::FFPlayerInstance(const std::string& address, bool sync,
+    std::function<bool(AVStream*)> create)
+    : m_address(address)
+    , m_sync(sync)
+    , m_fnCreate(create)
 {
     m_stop.store(false);
     m_mainThread = new std::thread(&FFPlayerInstance::run, this);
@@ -40,6 +41,7 @@ void FFPlayerInstance::run()
     //av_dict_set(&options, "threads", "auto",0);
 
     int videoStreamIndex = -1;
+    int frameTime = -1;
 
     while (!m_stop.load())
     {
@@ -70,14 +72,29 @@ void FFPlayerInstance::run()
             avformat_free_context(input_format_ctx);
             usleep(1000000);
         } else {
+            auto start = std::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();
             int err = av_read_frame(input_format_ctx, pkt);
-            if (err >= 0 && pkt->stream_index == videoStreamIndex && m_packets.write_available())
+            if (err >= 0 && pkt->stream_index == videoStreamIndex && m_packets.write_available()) {
+                int sleepTime = 1;
+                if (m_sync && pkt->pts != AV_NOPTS_VALUE) {
+                    AVRational msecondbase = { 1, 1000 };
+                    int f_number = pkt->pts;
+                    int f_time = av_rescale_q(pkt->pts, input_format_ctx->streams[videoStreamIndex]->time_base, msecondbase);
+                    if (frameTime > 0)
+                        sleepTime = (f_time - frameTime) * 1000;
+                    frameTime = f_time;
+                } else {
+                }
+                auto stop = std::chrono::high_resolution_clock::now();
+                int workTime = duration_cast<std::chrono::microseconds>(stop - start).count();
+                sleepTime -= workTime;
+                usleep(((sleepTime > 0) ? sleepTime : 1));
                 m_packets.push(pkt);
-            else
+            } else {
                 av_packet_free(&pkt);
-
-            usleep(10);
+                usleep(1);
+            }
         }
     }
     if (input_format_ctx)

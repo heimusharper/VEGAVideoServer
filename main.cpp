@@ -36,6 +36,7 @@ void showHelp()
     std::cout << " --cam-y-resolution -- camera Y resolution px/cm" << std::endl;
     std::cout << " --cam-orientation [1] -- camera orientation in EXIF orientation codes" << std::endl;
     std::cout << " --relief -- relief sources path" << std::endl;
+    std::cout << " --sync -- sync video DTS/PTS if [src] is file" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -87,11 +88,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-
-    // video source
+    // video
     //
+    bool sync = cmdOptionExists(argv, argv + argc, "--sync");
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
-    FFImageHttpSink::instance().create(video);
+    FFImageHttpSink::instance().create(video, sync);
 
     // MavProxy
     //

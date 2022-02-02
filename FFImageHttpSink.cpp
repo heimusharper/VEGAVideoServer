@@ -17,10 +17,10 @@ FFImageHttpSink &FFImageHttpSink::instance()
     return s;
 }
 
-void FFImageHttpSink::create(const std::string &str)
+void FFImageHttpSink::create(const std::string& str, bool sync)
 {
 
-    m_sink = new FFH264DecoderInstance(str);
+    m_sink = new FFH264DecoderInstance(str, sync);
 }
 
 Image *FFImageHttpSink::getImage()
@@ -85,10 +85,10 @@ Image *FFImageHttpSink::getImage()
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLength"), focal.get());
 
             // 32 mm equivalent
-            Exiv2::URationalValue::AutoPtr focal32(new Exiv2::URationalValue);
+            /*Exiv2::URationalValue::AutoPtr focal32(new Exiv2::URationalValue);
             focal32->value_.push_back(std::make_pair(int((MavContext::instance().focalLength() /
                                                           MavContext::instance().crop())  * 100), 100));
-            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLengthIn35mmFormat"), focal32.get());
+            exifData.add(Exiv2::ExifKey("Exif.Photo.FocalLengthIn35mmFormat"), focal32.get());*/
 
             // resolution
             Exiv2::URationalValue::AutoPtr xres(new Exiv2::URationalValue);
@@ -102,9 +102,9 @@ Image *FFImageHttpSink::getImage()
             exifData.add(Exiv2::ExifKey("Exif.Photo.FocalPlaneResolutionUnit"), resUnit.get());
 
             // orientation
-            Exiv2::UShortValue::AutoPtr oritent(new Exiv2::UShortValue);
+            /*Exiv2::UShortValue::AutoPtr oritent(new Exiv2::UShortValue);
             oritent->value_.push_back(3);
-            exifData.add(Exiv2::ExifKey("Exif.Photo.Orientation"), oritent.get());
+            exifData.add(Exiv2::ExifKey("Exif.Photo.Orientation"), oritent.get());*/
 
             // zoom
             Exiv2::URationalValue::AutoPtr zoom(new Exiv2::URationalValue);

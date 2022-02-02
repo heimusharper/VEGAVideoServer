@@ -2,19 +2,20 @@
 #define FFPLAYERINSTANCE_H
 
 #include "helper.h"
-#include <queue>
-#include <boost/lockfree/spsc_queue.hpp>
-#include <thread>
 #include <atomic>
-#include <iostream>
-#include <functional>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <chrono>
 #include <exception>
+#include <functional>
+#include <iostream>
+#include <queue>
+#include <thread>
 
 class FFPlayerInstance
 {
 public:
-    FFPlayerInstance(const std::string &address,
-                     std::function<bool(AVStream*)> create);
+    FFPlayerInstance(const std::string& address, bool sync,
+        std::function<bool(AVStream*)> create);
     ~FFPlayerInstance();
 
     void takePackets(std::queue<AVPacket*> &pkt);
@@ -25,6 +26,7 @@ private:
 
 private:
     std::string m_address;
+    const bool m_sync;
     std::function<bool(AVStream*)> m_fnCreate;
 
     std::atomic_bool m_stop;
