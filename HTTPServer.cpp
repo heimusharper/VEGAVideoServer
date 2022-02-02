@@ -40,11 +40,7 @@ int HTTPServer::start()
               evhttp_send_reply(req, HTTP_OK, "", req->output_buffer);
               delete image;
           } else {
-              auto *OutBuf = evhttp_request_get_output_buffer(req);
-              if (!OutBuf)
-                return;
-              // evbuffer_add_printf(OutBuf, "<html><body><center><h1>Image doesnt not found</h1></center></body></html>");
-              evhttp_send_reply(req, HTTP_NOCONTENT, "", OutBuf);
+              evhttp_send_error(req, HTTP_NOCONTENT, NULL);
           }
       };
       evhttp_set_gencb(Server.get(), OnReq, nullptr);
