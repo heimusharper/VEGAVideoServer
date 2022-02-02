@@ -2,12 +2,11 @@
 #define HELPER_H
 
 extern "C" {
-#include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavdevice/avdevice.h>
-#include <libavcodec/packet.h>
-#include <libswscale/swscale.h>
+#include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
 }
 #include <string>
 struct AVHelper {
