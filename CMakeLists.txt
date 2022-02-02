@@ -33,7 +33,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fstrict-aliasing  -Wno-deprecated-declarations -Wno-unused-variable -Wno-volatile -Wno-address-of-packed-member")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fstrict-aliasing  -Wno-deprecated-declarations -Wno-unused-variable")
 SET(THREADS_PREFER_PTHREAD_FLAG ON)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

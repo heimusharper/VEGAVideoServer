@@ -34,11 +34,10 @@ int HTTPServer::start()
 
               evhttp_add_header(outhead, "X-TimeStamp", std::to_string(time).c_str());
               evhttp_add_header(outhead, "Content-Type", "image/jpg");
-              auto *OutBuf = evhttp_request_get_output_buffer(req);
-              if (!OutBuf)
+              if (!req->output_buffer)
                 return;
-              evbuffer_add(OutBuf, image->image, image->size);
-              evhttp_send_reply(req, HTTP_OK, "", OutBuf);
+              evbuffer_add(req->output_buffer, image->image, image->size);
+              evhttp_send_reply(req, HTTP_OK, "", req->output_buffer);
               delete image;
           } else {
               auto *OutBuf = evhttp_request_get_output_buffer(req);

@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     if (cmdOptionExists(argv, argv + argc, "--relief"))
     {
         geo::HeightSourceHGT1M *hgt1 = new geo::HeightSourceHGT1M(
-                    std::filesystem::path(std::string(getCmdOption(argv, argv + argc, "--relief"))));
+                    boost::filesystem::path(std::string(getCmdOption(argv, argv + argc, "--relief"))));
         geo::HeightSource::instance().setInterface(hgt1);
     } else {
         std::cout << "missed --relief param" << std::endl;

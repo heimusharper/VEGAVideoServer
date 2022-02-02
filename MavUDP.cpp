@@ -65,7 +65,7 @@ void MavUDP::run()
             int n = recvfrom(sock, (char *)data, MAX_LINE, MSG_DONTWAIT, (struct sockaddr *)&cliaddr, &len);
             if (n > 0)
             {
-                if (!m_clients.contains(cliaddr))
+                if (m_clients.find(cliaddr) == m_clients.end())
                 {
                     std::cout << "New client " << cliaddr.sin_port;
                     // create new
