@@ -72,7 +72,7 @@ void FFPlayerInstance::run()
             avformat_free_context(input_format_ctx);
             usleep(1000000);
         } else {
-            auto start = 0;
+            boost::chrono::high_resolution_clock::time_point start;
             if (m_sync)
                 start = boost::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();

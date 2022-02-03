@@ -8,6 +8,7 @@ find_path(FFMPEG_INCLUDE_DIR
     include
 )
 
+find_library(NVMPI_LIBRARY nvmpi)
 find_library(AVCODEC_LIBRARY avcodec)
 find_library(AVFORMAT_LIBRARY avformat)
 find_library(AVUTIL_LIBRARY avutil)
@@ -16,6 +17,7 @@ find_library(SWSCALE_LIBRARY swscale)
 find_library(SWRESAMPLE_LIBRARY swresample)
 
 SET(AV_LIBS
+    ${NVMPI_LIBRARY}
     ${AVCODEC_LIBRARY}
     ${AVFORMAT_LIBRARY}
     ${AVUTIL_LIBRARY}
