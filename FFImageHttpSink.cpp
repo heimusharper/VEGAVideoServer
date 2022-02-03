@@ -19,7 +19,7 @@ FFImageHttpSink &FFImageHttpSink::instance()
 
 void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h)
 {
-    m_sink = new FFH264DecoderInstance(str, sync, w, h);
+    m_sink = new FFJPEGEncoderInstance(str, sync, w, h);
 }
 
 Image *FFImageHttpSink::getImage()

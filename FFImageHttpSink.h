@@ -1,8 +1,7 @@
 #ifndef FFIMAGEHTTPSINK_H
 #define FFIMAGEHTTPSINK_H
 
-#include "FFDecoderInstance.h"
-#include "FFH264DecoderInstance.h"
+#include "FFJPEGEncoderInstance.h"
 #include <thread>
 #include "helper.h"
 #include <exiv2/exiv2.hpp>
@@ -34,7 +33,7 @@ private:
 
 private:
     // источник фреймов видео
-    FFDecoderInstance *m_sink = nullptr;
+    FFJPEGEncoderInstance *m_sink = nullptr;
 };
 
 #endif // FFIMAGEHTTPSINK_H

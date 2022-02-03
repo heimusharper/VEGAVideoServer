@@ -86,11 +86,11 @@ add_executable(VEGAVideoServer
     MavContext.h MavContext.cpp
     MavlinkParser.h MavlinkParser.cpp
     FFImageFrame.h FFImageFrame.cpp
-    FFDecoderInstance.h
     FFPlayerInstance.h FFPlayerInstance.cpp
     FFH264DecoderInstance.h FFH264DecoderInstance.cpp
     FFImageHttpSink.h FFImageHttpSink.cpp
     HTTPServer.h HTTPServer.cpp
+    FFJPEGEncoderInstance.h FFJPEGEncoderInstance.cpp
 
     MavUDP.h MavUDP.cpp
 

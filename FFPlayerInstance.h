@@ -34,7 +34,7 @@ private:
     std::thread *m_mainThread;
 
 
-    boost::lockfree::spsc_queue<AVPacket*, boost::lockfree::capacity<50>> m_packets;
+    boost::lockfree::spsc_queue<AVPacket*, boost::lockfree::capacity<100>> m_packets;
 
 };
 

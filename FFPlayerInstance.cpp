@@ -91,11 +91,11 @@ void FFPlayerInstance::run()
                     sleepTime -= workTime;
                 } else {
                 }
-                usleep((sleepTime > 0) ? sleepTime : 1000);
+                usleep((sleepTime > 0) ? sleepTime : 10);
                 m_packets.push(pkt);
             } else {
                 av_packet_free(&pkt);
-                usleep(1000);
+                usleep(10);
             }
         }
     }
