@@ -38,7 +38,7 @@ void FFPlayerInstance::run()
 
     AVDictionary *options = nullptr;
     //av_dict_set(&options, "fflags", "nobuffer",0);
-    //av_dict_set(&options, "threads", "auto",0);
+    av_dict_set(&options, "threads", "auto",0);
 
     int videoStreamIndex = -1;
     int frameTime = -1;
@@ -65,35 +65,37 @@ void FFPlayerInstance::run()
                     }
                     continue;
                 } else
-                    std::cout << "failed find stream info, error " << AVHelper::av2str(err);
+                    std::cout << "failed find stream info, error " << AVHelper::av2str(err) << std::endl << std::flush;
             } else
-                std::cout << "failed open input, error " << AVHelper::av2str(err);
+                std::cout << "failed open input, error " << AVHelper::av2str(err) << std::endl << std::flush;
 
             avformat_free_context(input_format_ctx);
             usleep(1000000);
         } else {
-            auto start = boost::chrono::high_resolution_clock::now();
+            auto start = 0;
+            if (m_sync)
+                start = boost::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();
             int err = av_read_frame(input_format_ctx, pkt);
             if (err >= 0 && pkt->stream_index == videoStreamIndex && m_packets.write_available()) {
-                int sleepTime = 1;
+                int sleepTime = 1000;
                 if (m_sync && pkt->pts != AV_NOPTS_VALUE) {
                     AVRational msecondbase = { 1, 1000 };
-                    int f_number = pkt->pts;
+                    //int f_number = pkt->pts;
                     int f_time = av_rescale_q(pkt->pts, input_format_ctx->streams[videoStreamIndex]->time_base, msecondbase);
                     if (frameTime > 0)
                         sleepTime = (f_time - frameTime) * 1000;
                     frameTime = f_time;
+                    auto stop = boost::chrono::high_resolution_clock::now();
+                    int workTime = boost::chrono::duration_cast<boost::chrono::microseconds>(stop - start).count();
+                    sleepTime -= workTime;
                 } else {
                 }
-                auto stop = boost::chrono::high_resolution_clock::now();
-                int workTime = boost::chrono::duration_cast<boost::chrono::microseconds>(stop - start).count();
-                sleepTime -= workTime;
-                usleep(((sleepTime > 0) ? sleepTime : 1));
+                usleep((sleepTime > 0) ? sleepTime : 1000);
                 m_packets.push(pkt);
             } else {
                 av_packet_free(&pkt);
-                usleep(1);
+                usleep(1000);
             }
         }
     }

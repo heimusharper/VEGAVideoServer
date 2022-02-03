@@ -13,8 +13,9 @@ struct AVHelper {
 
     static std::string av2str(int err) {
         char s[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(err, s, AV_ERROR_MAX_STRING_SIZE);
-        return std::string(s, AV_ERROR_MAX_STRING_SIZE);
+        if (av_strerror(err, s, AV_ERROR_MAX_STRING_SIZE) == 0)
+            return std::string(s, strlen(s));
+        return std::string("undefined");
     }
 };
 #endif // HELPER_H

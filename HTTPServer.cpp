@@ -1,5 +1,5 @@
 #include "HTTPServer.h"
-
+#include <event.h>
 HTTPServer::HTTPServer(const HTTPServerConfiguration &config) :
     m_config(config)
 {
@@ -28,19 +28,18 @@ int HTTPServer::start()
       {
           Image *image = FFImageHttpSink::instance().getImage();
           if (image) {
-              evkeyvalq* outhead = evhttp_request_get_output_headers(req);
-
               uint64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-              evhttp_add_header(outhead, "X-TimeStamp", std::to_string(time).c_str());
-              evhttp_add_header(outhead, "Content-Type", "image/jpg");
-              if (!req->output_buffer)
-                return;
-              evbuffer_add(req->output_buffer, image->image, image->size);
-              evhttp_send_reply(req, HTTP_OK, "", req->output_buffer);
+              evhttp_add_header(req->output_headers, "X-TimeStamp", std::to_string(time).c_str());
+              evhttp_add_header(req->output_headers, "Content-Type", "image/jpg");
+              // evbuffer_add(req->output_buffer, image->image, image->size);
+              struct evbuffer *evb = evbuffer_new();
+              evbuffer_add(evb, image->image, image->size);
+              evhttp_send_reply(req, HTTP_OK, "OK", evb);
+              evbuffer_free(evb);
               delete image;
           } else {
-              evhttp_send_error(req, HTTP_NOCONTENT, NULL);
+              evhttp_send_error(req, HTTP_NOCONTENT,  "Image stream not initialized");
           }
       };
       evhttp_set_gencb(Server.get(), OnReq, nullptr);

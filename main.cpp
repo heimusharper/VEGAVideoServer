@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
         videoHeight = std::stoi(std::string(getCmdOption(argv, argv + argc, "--out_height")));
     bool sync = cmdOptionExists(argv, argv + argc, "--sync");
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
+
     FFImageHttpSink::instance().create(video, sync, videoWidth, videoHeight);
 
     // MavProxy

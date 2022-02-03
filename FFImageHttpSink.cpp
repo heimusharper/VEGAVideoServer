@@ -19,7 +19,6 @@ FFImageHttpSink &FFImageHttpSink::instance()
 
 void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h)
 {
-
     m_sink = new FFH264DecoderInstance(str, sync, w, h);
 }
 

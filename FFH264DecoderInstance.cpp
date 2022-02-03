@@ -3,6 +3,11 @@
 FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync, int w, int h)
     : FFDecoderInstance(sync, w, h)
 {
+    //av_log_set_level(AV_LOG_TRACE);
+    avdevice_register_all();
+    avcodec_register_all();
+    avformat_network_init();
+
     m_player = new FFPlayerInstance(address, m_sync,
         [this](AVStream* stream) -> bool {
             std::lock_guard g(m_codecContextLocker);
@@ -20,11 +25,11 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sy
 
                 if (stream->codec->codec_id == AV_CODEC_ID_H264)
                 {
-                    av_opt_set(m_videoCodecContext->priv_data, "preset", """ultrafast", 0);
+                    av_opt_set(m_videoCodecContext->priv_data, "preset", "ultrafast", 0);
                     av_opt_set(m_videoCodecContext->priv_data, "tune", "zerolatency", 0);
                     av_opt_set(m_videoCodecContext->priv_data, "crf", "23", 0);
                 }
-                m_videoCodecContext->thread_count = std::max(4, m_videoCodecContext->thread_count);
+                m_videoCodecContext->thread_count = std::max(3, m_videoCodecContext->thread_count);
 
                 if (avcodec_open2(m_videoCodecContext, nullptr, &options) < 0)
                 {
@@ -50,8 +55,8 @@ FFH264DecoderInstance::~FFH264DecoderInstance()
     if (m_mainThread->joinable())
         m_mainThread->join();
     delete m_mainThread;
-
     delete m_player;
+    avformat_network_deinit();
 }
 
 void FFH264DecoderInstance::run()
@@ -133,12 +138,7 @@ void FFH264DecoderInstance::run()
                                 }
                             }
 
-                            std::lock_guard m(m_frameLock);
                             if (m_jpegContext) {
-                                if (m_packet)
-                                    av_packet_unref(m_packet);
-                                else
-                                    m_packet = av_packet_alloc();
                                 if (yuv420_conversion)
                                 {
                                     // convert to AV_PIX_FMT_YUV420P
@@ -160,12 +160,22 @@ void FFH264DecoderInstance::run()
                                         avpicture_fill((AVPicture*)dstframe, buffer, (AVPixelFormat)dstframe->format, dstframe->width, dstframe->height);
                                         sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
                                         int got;
+                                        std::lock_guard m(m_frameLock);
+                                        if (m_packet)
+                                            av_packet_unref(m_packet);
+                                        else
+                                            m_packet = av_packet_alloc();
                                         if (avcodec_encode_video2(m_jpegContext, m_packet, dstframe, &got) >= 0)
                                             m_lastFrame = std::chrono::system_clock::now();
                                     }
                                     av_frame_free(&dstframe);
                                 } else {
                                     int got;
+                                    std::lock_guard m(m_frameLock);
+                                    if (m_packet)
+                                        av_packet_unref(m_packet);
+                                    else
+                                        m_packet = av_packet_alloc();
                                     if (avcodec_encode_video2(m_jpegContext, m_packet, frame, &got) >= 0)
                                     {
                                         m_lastFrame = std::chrono::system_clock::now();
@@ -179,10 +189,10 @@ void FFH264DecoderInstance::run()
                 }
                 av_packet_free(&pkt);
             }
-            usleep(100);
+            usleep(1000);
         } else {
             // long sleep
-            usleep(100);
+            usleep(1000);
         }
     }
     if (yuv420_conversion)

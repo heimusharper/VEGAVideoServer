@@ -33,7 +33,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fstrict-aliasing  -Wno-deprecated-declarations -Wno-unused-variable")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fstrict-aliasing  -Wno-deprecated-declarations -Wno-unused-variable -lz")
 SET(THREADS_PREFER_PTHREAD_FLAG ON)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -50,6 +50,7 @@ FIND_PATH(MAVLINK_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/c_library_v2)
 
 find_package(Boost REQUIRED)
+find_package(FFmpeg REQUIRED)
 find_package(Event REQUIRED)
 find_package(Exiv REQUIRED)
 
@@ -61,22 +62,23 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/c_library_v2)
 
 SET(USE_RTSP_AUTHENTICATION False CACHE BOOL "")
 # find ffmpeg
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-    libavdevice
-    libavfilter
-    libavformat
-    libavcodec
-    libswresample
-    libswscale
-    libavutil
-)
+#find_package(PkgConfig REQUIRED)
+#pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+#    libavdevice
+#    libavfilter
+#    libavformat
+#    libavcodec
+#    libswresample
+#    libswscale
+#    libavutil
+#)
 
 FIND_PACKAGE(Gdal REQUIRED)
 FIND_PACKAGE(GeoInterface REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Gdal_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${FFMPEG_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${GeoInterface_INCLUDE_DIRS})
 
 add_executable(VEGAVideoServer
@@ -101,8 +103,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${LIBEXIV2_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${Boost_LIBRARY_DIRS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${GeoInterface_LIBRARY_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEVENT_LIB})
-target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::LIBAV)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${AV_LIBS})
+#target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::LIBAV)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEXIV2_LIB})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${Gdal_LIBRARY_DIRS})
+
+message("${FFMPEG_LIB}")
 
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
