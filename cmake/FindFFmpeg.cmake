@@ -17,7 +17,6 @@ find_library(SWSCALE_LIBRARY swscale)
 find_library(SWRESAMPLE_LIBRARY swresample)
 
 SET(AV_LIBS
-    ${NVMPI_LIBRARY}
     ${AVCODEC_LIBRARY}
     ${AVFORMAT_LIBRARY}
     ${AVUTIL_LIBRARY}
@@ -25,6 +24,15 @@ SET(AV_LIBS
     ${SWSCALE_LIBRARY}
     ${SWRESAMPLE_LIBRARY}
     )
+SET(USE_NVMPI False)
+IF (NVMPI_LIBRARY)
+    SET(AV_LIBS
+        ${AV_LIBS}
+        ${NVMPI_LIBRARY}
+        )
+    SET(USE_NVMPI True)
+ENDIF()
+
 #find_library(Z_LIB
 #  NAMES
 #    z

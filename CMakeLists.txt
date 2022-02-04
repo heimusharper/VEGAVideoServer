@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(VEGAVideoServer LANGUAGES CXX)
 
@@ -49,10 +49,12 @@ FIND_PATH(MAVLINK_INCLUDE_DIR
     PATHS
     ${PROJECT_SOURCE_DIR}/c_library_v2)
 
-find_package(Boost REQUIRED)
-find_package(FFmpeg REQUIRED)
-find_package(Event REQUIRED)
-find_package(Exiv REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
+FIND_PACKAGE(FFmpeg REQUIRED)
+FIND_PACKAGE(Event REQUIRED)
+FIND_PACKAGE(Exiv REQUIRED)
+FIND_PACKAGE(Gdal REQUIRED)
+FIND_PACKAGE(GeoInterface REQUIRED)
 
 IF (NOT MAVLINK_INCLUDE_DIR)
     message("Failed build mavlink")
@@ -61,20 +63,12 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/c_library_v2)
 # end mavlink
 
 SET(USE_RTSP_AUTHENTICATION False CACHE BOOL "")
-# find ffmpeg
-#find_package(PkgConfig REQUIRED)
-#pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-#    libavdevice
-#    libavfilter
-#    libavformat
-#    libavcodec
-#    libswresample
-#    libswscale
-#    libavutil
-#)
 
-FIND_PACKAGE(Gdal REQUIRED)
-FIND_PACKAGE(GeoInterface REQUIRED)
+
+
+IF (${USE_NVMPI})
+    add_definitions(-DUSE_NVMPI)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Gdal_INCLUDE_DIRS})
