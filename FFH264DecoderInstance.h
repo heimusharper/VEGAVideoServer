@@ -30,6 +30,7 @@ public:
     }
     int lifetime() const
     {
+        //!TODO m_lastFrame - не инициализированна и не обновляется
         const std::chrono::time_point<std::chrono::system_clock> now =
             std::chrono::system_clock::now();
         return std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFrame).count();
