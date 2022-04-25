@@ -26,8 +26,8 @@ Image *FFImageHttpSink::getImage()
 {
     if (!m_sink)
         return nullptr;
-    if (m_sink->lifetime() > 1000)
-        return nullptr;
+    //if (m_sink->lifetime() > 10000)
+      //  return nullptr;
     AVPacket* frame = m_sink->takeFrame();
     if (!frame)
         return nullptr;
@@ -156,6 +156,8 @@ Image *FFImageHttpSink::getImage()
         out->size = file_size;
         out->image = new char[file_size];
         memcpy(out->image, buff.pData_, file_size);
+
+        std::cerr << std::hex <<"!"<<(int)buff.pData_[1]<<" " <<(int)buff.pData_[file_size-1] << std::endl;
     } catch (Exiv2::Error &e){
         std::cout << "Caught Exiv2 exception '" << e.what() << std::endl;
     }

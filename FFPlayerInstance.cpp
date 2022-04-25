@@ -38,6 +38,10 @@ void FFPlayerInstance::run()
 
     AVDictionary *options = nullptr;
     //av_dict_set(&options, "fflags", "nobuffer",0);
+
+    //! TODO без этого не инициализирует энкодер для jpeg
+    av_register_all();
+    avcodec_register_all();
     av_dict_set(&options, "threads", "auto",0);
 
     int videoStreamIndex = -1;
