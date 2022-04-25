@@ -30,6 +30,8 @@ public:
     }
     int lifetime() const
     {
+        if (!m_frame)
+            return 100000;
         const std::chrono::time_point<std::chrono::system_clock> now =
             std::chrono::system_clock::now();
         return std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFrame).count();
