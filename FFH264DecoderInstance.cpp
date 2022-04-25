@@ -102,6 +102,7 @@ void FFH264DecoderInstance::run()
                                 av_frame_unref(m_frame);
                             else
                                 m_frame = av_frame_alloc();
+                            m_lastFrame = std::chrono::system_clock::now();
                             av_frame_ref(m_frame, frame);
                         }
                         av_frame_unref(frame);
