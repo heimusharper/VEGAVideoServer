@@ -14,9 +14,11 @@ FFJPEGEncoderInstance::FFJPEGEncoderInstance(const std::string& address, bool sy
 
 AVPacket *FFJPEGEncoderInstance::takeFrame()
 {
+std::cout << "take"<<std::endl;
     AVFrame *frame = m_decoder->takeFrame();
     if (!frame)
         return nullptr;
+std::cout << "got" <<std::endl;
     int targetWidth = frame->width;
     int targetHeight = frame->height;
 
@@ -86,6 +88,7 @@ AVPacket *FFJPEGEncoderInstance::takeFrame()
                 avpicture_fill((AVPicture*)dstframe, buffer, (AVPixelFormat)dstframe->format, dstframe->width, dstframe->height);
                 sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
                 int got;
+std::cout << "package" << std::endl;
                 AVPacket *m_packet = av_packet_alloc();
                 if (avcodec_encode_video2(m_jpegContext, m_packet, dstframe, &got) >= 0) {
                     av_frame_unref(frame);

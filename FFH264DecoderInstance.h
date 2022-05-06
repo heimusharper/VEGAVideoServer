@@ -21,11 +21,14 @@ public:
 
     AVFrame *takeFrame()
     {
-        std::lock_guard g(m_frameLock);
-        if (!m_frame)
+        m_frameLock.lock();
+        if (!m_frame) {
+            m_frameLock.unlock();
             return nullptr;
+        }
         AVFrame *packet = av_frame_alloc();
         av_frame_ref(packet, m_frame);
+        m_frameLock.unlock();
         return packet;
     }
     int lifetime() const

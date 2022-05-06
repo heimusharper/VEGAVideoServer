@@ -19,18 +19,24 @@ FFImageHttpSink &FFImageHttpSink::instance()
 
 void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h)
 {
+std::cout << "create sink " << str << "s " << sync << " w " << w << " h " << h << std::endl;
     m_sink = new FFJPEGEncoderInstance(str, sync, w, h);
 }
 
 Image *FFImageHttpSink::getImage()
 {
+// std::cout << "sink" << m_sink << "lt " << m_sink->lifetime() << "frame " << m_sink->takeFrame() << std::endl;
+std::cout << "1" << std::endl;
     if (!m_sink)
         return nullptr;
-    if (m_sink->lifetime() > 1000)
-        return nullptr;
+std::cout << "2" << std::endl;
+    //if (m_sink->lifetime() > 1000)
+    //    return nullptr;
+std::cout << "3" << std::endl;
     AVPacket* frame = m_sink->takeFrame();
     if (!frame)
         return nullptr;
+std::cout <<"hasframe" << std::endl;
     const float scaleFactor = m_sink->scaleFactor();
     Image *out = nullptr;
     try {

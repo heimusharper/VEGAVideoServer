@@ -10,7 +10,9 @@ find_library(LIBEVENT_LIB
   NAMES
     event
   PATHS
+    /usr/lib/x86_64-linux-gnu
     /usr/local
+    /usr
     /opt
   PATH_SUFFIXES
     lib

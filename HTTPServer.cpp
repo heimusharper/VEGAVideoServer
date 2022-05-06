@@ -3,6 +3,7 @@
 HTTPServer::HTTPServer(const HTTPServerConfiguration &config) :
     m_config(config)
 {
+std::cout <<"run server"<<std::endl;
     m_run.store(true);
 }
 
@@ -26,6 +27,7 @@ int HTTPServer::start()
       }
       void (*OnReq)(evhttp_request *req, void *) = [] (evhttp_request *req, void *)
       {
+std::cout << "<<<get image" << std::endl;
           Image *image = FFImageHttpSink::instance().getImage();
           if (image) {
               uint64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

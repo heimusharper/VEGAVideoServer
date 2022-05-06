@@ -11,6 +11,7 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sy
     m_player = new FFPlayerInstance(address, m_sync,
         [this](AVStream* stream) -> bool {
 #if defined (USE_NVMPI)
+std::cout << "codec" << stream->codec->codec_id << " " << (int)AV_CODEC_ID_H264 << std::endl;
             if (stream->codec->codec_id == AV_CODEC_ID_H264)
 #endif
             {
@@ -40,7 +41,7 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sy
                     }
                     m_videoCodecContext->thread_count = std::max(4, m_videoCodecContext->thread_count);
 #endif
-
+std::cout << "create codec" << std::endl;
                     if (avcodec_open2(m_videoCodecContext, nullptr, &options) < 0)
                     {
                         std::cout << "failed open codec";

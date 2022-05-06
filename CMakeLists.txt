@@ -12,9 +12,9 @@ ENDIF()
 
 
 # ASAN CONFIGURE
-SET(ASAN_ADDRESS True CACHE BOOL "Compile address sanitizer")
-SET(ASAN_THREADS False CACHE BOOL "Compile thread sanitizer")
-SET(ASAN_UB True CACHE BOOL "Compile undefined behaviour sanitizer")
+#SET(ASAN_ADDRESS True CACHE BOOL "Compile address sanitizer")
+#SET(ASAN_THREADS False CACHE BOOL "Compile thread sanitizer")
+#SET(ASAN_UB True CACHE BOOL "Compile undefined behaviour sanitizer")
 
 IF (${ASAN_ADDRESS})
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address -fsanitize=leak -g")
@@ -33,7 +33,7 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pthread")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -fstrict-aliasing  -Wno-deprecated-declarations -Wno-unused-variable -lz")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lz")
 SET(THREADS_PREFER_PTHREAD_FLAG ON)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -64,10 +64,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/c_library_v2)
 
 SET(USE_RTSP_AUTHENTICATION False CACHE BOOL "")
 
-
-
 IF (${USE_NVMPI})
-    add_definitions(-DUSE_NVMPI)
+	#    add_definitions(-DUSE_NVMPI)
 ENDIF()
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
@@ -75,33 +73,44 @@ INCLUDE_DIRECTORIES(${Gdal_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${FFMPEG_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${GeoInterface_INCLUDE_DIRS})
 
-add_executable(VEGAVideoServer
+SET(HEADERS_LIST
     helper.h
-    MavContext.h MavContext.cpp
-    MavlinkParser.h MavlinkParser.cpp
-    FFImageFrame.h FFImageFrame.cpp
-    FFPlayerInstance.h FFPlayerInstance.cpp
-    FFH264DecoderInstance.h FFH264DecoderInstance.cpp
-    FFImageHttpSink.h FFImageHttpSink.cpp
-    HTTPServer.h HTTPServer.cpp
-    FFJPEGEncoderInstance.h FFJPEGEncoderInstance.cpp
+    MavContext.h
+    MavlinkParser.h
+    FFImageFrame.h
+    FFPlayerInstance.h
+    FFH264DecoderInstance.h
+    FFImageHttpSink.h
+    HTTPServer.h
+    FFJPEGEncoderInstance.h
+    MavUDP.h
+    )
+SET(SOURCES_LIST
+    MavContext.cpp
+    MavlinkParser.cpp
+    FFImageFrame.cpp
+    FFPlayerInstance.cpp
+    FFH264DecoderInstance.cpp
+    FFImageHttpSink.cpp
+    HTTPServer.cpp
+    FFJPEGEncoderInstance.cpp
+    MavUDP.cpp
+    main.cpp
+    )
 
-    MavUDP.h MavUDP.cpp
+ADD_EXECUTABLE(VEGAVideoServer ${HEADERS_LIST} ${SOURCES_LIST})
 
-    main.cpp)
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${LIBEVENT_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${LIBEXIV2_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${LIBEVENT_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${LIBEXIV2_INCLUDE_DIR})
 
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${Boost_LIBRARY_DIRS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${GeoInterface_LIBRARY_DIRS})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEVENT_LIB})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${AV_LIBS})
-#target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::LIBAV)
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBEXIV2_LIB})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${LIBEVENT_LIB})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${AV_LIBS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${LIBEXIV2_LIB})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${Gdal_LIBRARY_DIRS})
-
-message("${FFMPEG_LIB}")
-
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+# install(FILES ${HEADERS_LIST} DESTINATION include)

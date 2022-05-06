@@ -1,0 +1,46 @@
+#!/bin/bash -x
+#
+# Provides:          VEGAVideoServer
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Should-Start:      $named
+# Should-Stop:       $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start VEGAVideoServer.
+# Description:       Start VEGAVideoServer.
+### END INIT INFO
+
+export VIDEO_SOURCE=http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
+export HTTP_SERVER_HOST=10.0.0.12
+export CAMERA_FOCAL_LENGTH=50
+export CAMERA_CROP_FACTOR=1
+export CAMERA_X_RESOLUTION=100
+export CAMERA_Y_RESOLUTION=100
+export RELIEF_PATH=/home/unmanned/relief
+export OUT_WIDTH=800
+
+PIDFILE=/var/run/<NAME>.pid
+LOGFILE=/var/log/<NAME>.log
+RUNAS=unmanned
+
+start() {
+    if [ -f /var/run/$PIDNAME ] && kill -0 $(cat /var/run/$PIDNAME); then
+        echo 'Service already running' >&2
+        return 1
+    fi
+    echo 'Starting service...' >&2
+    local CMD="/usr/local/bin/VEGAVideoServer --src "${VIDEO_SOURCE}" --http-host "${HTTP_SERVER_HOST}" --cam-focal-length "${CAMERA_FOCAL_LENGTH}" --cam-crop-factor "${CAMERA_CROP_FACTOR}" --cam-x-resolution "${CAMERA_X_RESOLUTION}" --cam-y-resolution "${CAMERA_Y_RESOLUTION}" --relief "${RELIEF_PATH}" --out_width "${OUT_WIDTH}
+    su -c "$CMD" $RUNAS > "$PIDFILE"
+    echo 'Service started' >&2
+}
+
+stop()  {
+    if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
+        echo 'Service not running' >&2
+        return 1
+    fi
+    echo 'Stopping service…' >&2
+    kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
+    echo 'Service stopped' >&2
+}

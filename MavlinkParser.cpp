@@ -34,13 +34,16 @@ int MavlinkParser::lifetime() const
 
 int MavlinkParser::write(char *buff, int max)
 {
-    std::lock_guard g(m_messageMutex);
-    if (m_messageToSend.empty())
+    m_messageMutex.lock();
+    if (m_messageToSend.empty()) {
+        m_messageMutex.unlock();
         return 0;
+    }
     mavlink_message_t msg = m_messageToSend.front();
     m_messageToSend.pop();
     assert(max >= MAVLINK_MAX_PACKET_LEN);
     uint16_t l = mavlink_msg_to_send_buffer((uint8_t*)buff, &msg);
+    m_messageMutex.unlock();
     if (l > 0)
         return l;
     return 0;

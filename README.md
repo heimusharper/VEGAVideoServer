@@ -13,3 +13,5 @@ cmake ..
 
 make 
 
+
+init.d and system.d scripts in linux dirrectory
