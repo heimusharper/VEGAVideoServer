@@ -59,8 +59,9 @@ void MavlinkParser::ping()
             mavlink_msg_heartbeat_pack_chan(
             GCS_ID, MAV_COMP_ID_MISSIONPLANNER, DIFFERENT_CHANNEL, &msg_hb, MAV_TYPE_ONBOARD_CONTROLLER,
                         MAV_AUTOPILOT_INVALID, 0, 0, 0);
-            std::lock_guard g(m_messageMutex);
+            m_messageMutex.lock();
             m_messageToSend.push(msg_hb);
+            m_messageMutex.unlock();
 
         }
     }

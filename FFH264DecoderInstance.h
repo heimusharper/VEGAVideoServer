@@ -31,13 +31,19 @@ public:
         m_frameLock.unlock();
         return packet;
     }
-    int lifetime() const
+    int lifetime()
     {
-        if (!m_frame)
-            return 100000;
+        //!TODO m_lastFrame - не инициализированна и не обновляется
+        m_frameLock.lock();
+        if (!m_frame) {
+            m_frameLock.unlock();
+            return 1000000;
+        }
         const std::chrono::time_point<std::chrono::system_clock> now =
             std::chrono::system_clock::now();
-        return std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFrame).count();
+        int lt = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastFrame).count();
+        m_frameLock.unlock();
+        return lt;
     }
     int64_t bitrate() const
     {

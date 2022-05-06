@@ -98,12 +98,14 @@ void FFH264DecoderInstance::run()
                         int decErr = avcodec_receive_frame(m_videoCodecContext, frame);
                         if (decErr == 0)
                         {
-                            std::lock_guard g(m_frameLock);
+                            m_frameLock.lock();
                             if (m_frame)
                                 av_frame_unref(m_frame);
                             else
                                 m_frame = av_frame_alloc();
+                            m_lastFrame = std::chrono::system_clock::now();
                             av_frame_ref(m_frame, frame);
+                            m_frameLock.unlock();
                         }
                         av_frame_unref(frame);
                     }
