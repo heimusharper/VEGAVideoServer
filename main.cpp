@@ -4,6 +4,7 @@
 #include "MavUDP.h"
 #include <HeightSource.h>
 #include <HeightSourceHGT1M.h>
+#include "FFPlayerInstance.h"
 
 char* getCmdOption(char ** begin, char ** end, const std::string & option)
 {
@@ -25,6 +26,7 @@ void showHelp()
     std::cout << "VEGAVideoServer" << std::endl;
     std::cout << " -h -- this help" << std::endl;
     std::cout << " --src [URL] -- source video URL [\"http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4\"]" << std::endl;
+    std::cout << " --out [out] -- output file suffix (path?) ie: /run/media/sd/out_DATE_TIME.mp4" << std::endl;
     std::cout << " --http-host [127.0.0.1] -- http server host" << std::endl;
     std::cout << " --http-port [8088] -- http server port" << std::endl;
     std::cout << " --mav-host [127.0.0.1] -- mavproxy udp host" << std::endl;
@@ -104,6 +106,24 @@ int main(int argc, char *argv[])
     if (cmdOptionExists(argv, argv + argc, "--tune"))
         tune = std::string(getCmdOption(argv, argv + argc, "--tune"));
 
+    // output
+    bool writeOut = false;
+    std::string output;
+    if (cmdOptionExists(argv, argv + argc, "--out"))
+    {
+        time_t     now = time(0);
+        struct tm  tstruct;
+        char       buf[80];
+        tstruct = *localtime(&now);
+        // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+        // for more information about date/time format
+        strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+        writeOut = true;
+        output = getCmdOption(argv, argv + argc, "--out");
+        output = output + "_";
+    }
+
     // video
     //
     int videoWidth = 0;
@@ -115,8 +135,25 @@ int main(int argc, char *argv[])
     bool sync = cmdOptionExists(argv, argv + argc, "--sync");
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
 
-    FFImageHttpSink::instance().create(video, sync, videoWidth, videoHeight,
-                                       preset, tune, quality);
+    avdevice_register_all();
+    avcodec_register_all();
+    avformat_network_init();
+
+    FFPlayerInstance player;
+    // create readers
+    FFH264DecoderInstance *decoder = new FFH264DecoderInstance(preset, tune);
+    player.addReader(decoder);
+    if (writeOut) {
+        FFMpegFileSave *saveFile = new FFMpegFileSave();
+        player.addReader(saveFile);
+    }
+    // http output
+    FFJPEGEncoderInstance *encoder = new FFJPEGEncoderInstance(decoder, videoWidth, videoHeight, quality);
+
+    FFImageHttpSink::instance().init(encoder);
+
+    // start processing
+    player.start(video, sync);
 
     // MavProxy
     //

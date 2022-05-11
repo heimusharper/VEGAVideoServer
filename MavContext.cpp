@@ -11,6 +11,16 @@ MavContext::MavContext()
 
 }
 
+int64_t MavContext::time() const
+{
+    return m_time;
+}
+
+void MavContext::setTime(int64_t newTime)
+{
+    m_time = newTime;
+}
+
 int MavContext::zoom() const
 {
     return m_zoom;

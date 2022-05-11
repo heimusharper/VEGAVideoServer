@@ -1,18 +1,12 @@
 #include "FFJPEGEncoderInstance.h"
 
-FFJPEGEncoderInstance::FFJPEGEncoderInstance(const std::string& address, bool sync, int w,
-                                             int h, const std::string &preset,
-                                             const std::string &tune, int quality)
-    : m_sync(sync)
-    , m_targetW(w)
+FFJPEGEncoderInstance::FFJPEGEncoderInstance(FFH264DecoderInstance *decoder, int w,
+                                             int h, int quality)
+    : m_targetW(w)
     , m_targetH(h)
     , m_quality(quality)
+    , m_decoder(decoder)
 {
-    m_decoder = new FFH264DecoderInstance(address, sync, preset, tune);
-    //av_log_set_level(AV_LOG_TRACE);
-    avdevice_register_all();
-    avcodec_register_all();
-    avformat_network_init();
 }
 
 AVPacket *FFJPEGEncoderInstance::takeFrame()

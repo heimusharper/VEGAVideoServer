@@ -2,13 +2,12 @@
 #define FFJPEGENCODERINSTANCE_H
 
 #include "FFH264DecoderInstance.h"
+#include "FFMpegFileSave.h"
 
 class FFJPEGEncoderInstance
 {
 public:
-    FFJPEGEncoderInstance(const std::string& address, bool sync, int w, int h,
-                          const std::string& preset, const std::string&tune,
-                          int quality);
+    FFJPEGEncoderInstance(FFH264DecoderInstance *decoder, int w, int h, int quality);
     FFJPEGEncoderInstance(const FFJPEGEncoderInstance&c) = delete;
     virtual ~FFJPEGEncoderInstance();
 
@@ -33,11 +32,10 @@ public:
     }
 
 private:
-    bool m_sync;
-    int m_targetW;
-    int m_targetH;
+    const int m_targetW;
+    const int m_targetH;
 
-    int m_quality;
+    const int m_quality;
 
     int w = 0;
     int h = 0;
@@ -46,6 +44,7 @@ private:
     float m_scaleFactor = 1;
 
     FFH264DecoderInstance *m_decoder = nullptr;
+    FFMpegFileSave *m_encoder = nullptr;
     // decoder
     AVCodecContext *m_jpegContext = nullptr;
     SwsContext* yuv420_conversion = nullptr;

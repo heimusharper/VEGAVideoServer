@@ -22,19 +22,16 @@ class FFImageHttpSink
 public:
     ~FFImageHttpSink();
 
-    static FFImageHttpSink &instance();
+    void init(FFJPEGEncoderInstance *sink);
 
-    void create(const std::string& str, bool sync, int w, int h,
-                const std::string &preset, const std::string &tune, int quality);
+    static FFImageHttpSink &instance();
 
     Image *getImage();
 
 private:
-    FFImageHttpSink();
-
-private:
     // источник фреймов видео
     FFJPEGEncoderInstance *m_sink = nullptr;
+    FFImageHttpSink();
 };
 
 #endif // FFIMAGEHTTPSINK_H

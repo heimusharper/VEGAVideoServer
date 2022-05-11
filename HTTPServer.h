@@ -29,11 +29,8 @@ public:
     int start();
 
 private:
-
-
     HTTPServerConfiguration m_config;
     std::atomic_bool m_run;
-
 
 };
 

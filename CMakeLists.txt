@@ -84,6 +84,8 @@ SET(HEADERS_LIST
     HTTPServer.h
     FFJPEGEncoderInstance.h
     MavUDP.h
+    IPacketReader.h
+    FFMpegFileSave.h
     )
 SET(SOURCES_LIST
     MavContext.cpp
@@ -96,6 +98,7 @@ SET(SOURCES_LIST
     FFJPEGEncoderInstance.cpp
     MavUDP.cpp
     main.cpp
+    FFMpegFileSave.cpp
     )
 
 ADD_EXECUTABLE(VEGAVideoServer ${HEADERS_LIST} ${SOURCES_LIST})

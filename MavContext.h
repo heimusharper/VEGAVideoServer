@@ -70,6 +70,9 @@ public:
     int zoom() const;
     void setZoom(int newZoom);
 
+    int64_t time() const;
+    void setTime(int64_t newTime);
+
 private:
     MavContext();
 
@@ -90,6 +93,7 @@ private:
     float m_gmbYaw = 0;
 
     uint32_t m_timestamp = 0;
+    int64_t m_time = 0;
 
     float m_homeAlt = 0;
 

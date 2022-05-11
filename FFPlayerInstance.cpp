@@ -1,13 +1,7 @@
 #include "FFPlayerInstance.h"
 
-FFPlayerInstance::FFPlayerInstance(const std::string& address, bool sync,
-    std::function<bool(AVStream*)> create)
-    : m_address(address)
-    , m_sync(sync)
-    , m_fnCreate(create)
+FFPlayerInstance::FFPlayerInstance()
 {
-    m_stop.store(false);
-    m_mainThread = new std::thread(&FFPlayerInstance::run, this);
 }
 
 FFPlayerInstance::~FFPlayerInstance()
@@ -18,16 +12,12 @@ FFPlayerInstance::~FFPlayerInstance()
     delete m_mainThread;
 }
 
-void FFPlayerInstance::takePackets(std::queue<AVPacket *> &pkt)
+void FFPlayerInstance::start(const std::string &address, bool sync)
 {
-    try {
-        while (m_packets.read_available() > 0)
-        {
-            pkt.push(m_packets.front());
-            m_packets.pop();
-        }
-    } catch (std::exception *e) {
-    }
+    m_sync = sync;
+    m_address = address;
+    m_stop.store(false);
+    m_mainThread = new std::thread(&FFPlayerInstance::run, this);
 }
 
 void FFPlayerInstance::run()
@@ -62,8 +52,8 @@ void FFPlayerInstance::run()
                         if (input_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
                             videoStreamIndex = (int)i;
                             reloadStream = false; // done stream
-                            if (m_fnCreate)
-                                m_fnCreate(input_format_ctx->streams[i]);
+                            for (auto x : m_readers)
+                                x->onCreateStream(input_format_ctx->streams[i]);
                             break;
                         }
                     }
@@ -80,9 +70,9 @@ void FFPlayerInstance::run()
             if (m_sync)
                 start = boost::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();
+            int sleepTime = 10;
             int err = av_read_frame(input_format_ctx, pkt);
-            if (err >= 0 && pkt->stream_index == videoStreamIndex && m_packets.write_available()) {
-                int sleepTime = 1000;
+            if (err >= 0 && pkt->stream_index == videoStreamIndex) {
                 if (m_sync && pkt->pts != AV_NOPTS_VALUE) {
                     AVRational msecondbase = { 1, 1000 };
                     //int f_number = pkt->pts;
@@ -96,11 +86,11 @@ void FFPlayerInstance::run()
                 } else {
                 }
                 usleep((sleepTime > 0) ? sleepTime : 10);
-                m_packets.push(pkt);
-            } else {
-                av_packet_free(&pkt);
-                usleep(10);
+                for (auto x : m_readers)
+                    x->flushPacket(pkt);
             }
+            av_packet_unref(pkt);
+            usleep((sleepTime > 0) ? sleepTime : 10);
         }
     }
     if (input_format_ctx)

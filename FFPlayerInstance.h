@@ -8,6 +8,7 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <exception>
 #include <functional>
+#include <IPacketReader.h>
 #include <iostream>
 #include <queue>
 #include <thread>
@@ -15,11 +16,16 @@
 class FFPlayerInstance
 {
 public:
-    FFPlayerInstance(const std::string& address, bool sync,
-        std::function<bool(AVStream*)> create);
+    FFPlayerInstance();
     ~FFPlayerInstance();
 
-    void takePackets(std::queue<AVPacket*> &pkt);
+    void start(const std::string& address, bool sync);
+
+
+    void addReader(IPacketReader *r)
+    {
+        m_readers.push_back(r);
+    }
 
 private:
 
@@ -27,15 +33,12 @@ private:
 
 private:
     std::string m_address;
-    const bool m_sync;
-    std::function<bool(AVStream*)> m_fnCreate;
+    bool m_sync;
 
     std::atomic_bool m_stop;
     std::thread *m_mainThread;
 
-
-    boost::lockfree::spsc_queue<AVPacket*, boost::lockfree::capacity<100>> m_packets;
-
+    std::vector<IPacketReader*> m_readers;
 };
 
 #endif // FFPLAYERINSTANCE_H

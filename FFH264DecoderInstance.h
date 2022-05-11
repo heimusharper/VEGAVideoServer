@@ -6,19 +6,23 @@
 #endif
 #include "helper.h"
 #include "FFImageFrame.h"
-#include "FFPlayerInstance.h"
+#include <iostream>
 #include <thread>
+#include "MavContext.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <atomic>
 #include <mutex>
+#include "IPacketReader.h"
 #include <queue>
 
-class FFH264DecoderInstance
+class FFH264DecoderInstance : public IPacketReader
 {
 public:
-    FFH264DecoderInstance(const std::string& address, bool sync,
-                          const std::string &preset, const std::string &tune);
+    FFH264DecoderInstance(const std::string &preset, const std::string &tune);
     FFH264DecoderInstance(const FFH264DecoderInstance&c) = delete;
     virtual ~FFH264DecoderInstance();
+
+    virtual void onCreateStream(AVStream *stream) override;
 
     AVFrame *takeFrame()
     {
@@ -27,10 +31,10 @@ public:
             m_frameLock.unlock();
             return nullptr;
         }
-        AVFrame *packet = av_frame_alloc();
-        av_frame_ref(packet, m_frame);
+        AVFrame *frame = av_frame_alloc();
+        av_frame_ref(frame, m_frame);
         m_frameLock.unlock();
-        return packet;
+        return frame;
     }
     int lifetime()
     {
@@ -58,7 +62,8 @@ private:
     std::atomic_bool m_stop;
     std::thread *m_mainThread;
 
-    FFPlayerInstance *m_player = nullptr;
+    const std::string m_preset;
+    const std::string m_tune;
 
     bool m_sync;
 

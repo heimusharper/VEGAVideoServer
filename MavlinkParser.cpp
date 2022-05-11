@@ -112,7 +112,6 @@ void MavlinkParser::read(const mavlink_message_t &msg)
             MavContext::instance().setAlt(static_cast<double>(pos.relative_alt) / 1000.);
 
             MavContext::instance().setTimestamp(pos.time_boot_ms);
-
             break;
         }
         case MAVLINK_MSG_ID_MOUNT_STATUS:
@@ -137,6 +136,7 @@ void MavlinkParser::read(const mavlink_message_t &msg)
                             0, 0, 0, 0, 0, 0, 0, 0);
                 m_messageToSend.push(message);
             }
+            MavContext::instance().setTime(gps.time_usec);
             m_gpsFixType = gps.fix_type;
             break;
         }

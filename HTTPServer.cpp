@@ -1,9 +1,8 @@
 #include "HTTPServer.h"
 #include <event.h>
-HTTPServer::HTTPServer(const HTTPServerConfiguration &config) :
-    m_config(config)
+HTTPServer::HTTPServer(const HTTPServerConfiguration &config)
+    : m_config(config)
 {
-std::cout <<"run server"<<std::endl;
     m_run.store(true);
 }
 
