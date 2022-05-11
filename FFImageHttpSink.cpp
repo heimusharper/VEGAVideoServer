@@ -26,13 +26,17 @@ void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h,
 
 Image *FFImageHttpSink::getImage()
 {
-    if (!m_sink)
+    if (!m_sink) {
+        std::cout << "Stream not initialized" << std::endl;
         return nullptr;
+    }
     //if (m_sink->lifetime() > 10000)
       //  return nullptr;
     AVPacket* frame = m_sink->takeFrame();
-    if (!frame)
+    if (!frame) {
+        std::cout << "Frame not exist" << std::endl;
         return nullptr;
+    }
     const float scaleFactor = m_sink->scaleFactor();
     Image *out = nullptr;
     try {
@@ -40,6 +44,7 @@ Image *FFImageHttpSink::getImage()
                 Exiv2::ImageFactory::open((Exiv2::byte *)frame->data, frame->size);
         // av_packet_unref(&frame);
         if (eximage.get() == 0) {
+            std::cout << "Failed get EXIF" << std::endl;
             return nullptr;
         }
 #if EXIV2_TEST_VERSION(0,27,0)
@@ -158,8 +163,6 @@ Image *FFImageHttpSink::getImage()
         out->size = file_size;
         out->image = new char[file_size];
         memcpy(out->image, buff.pData_, file_size);
-
-        std::cerr << std::hex <<"!"<<(int)buff.pData_[1]<<" " <<(int)buff.pData_[file_size-1] << std::endl;
     } catch (Exiv2::Error &e){
         std::cout << "Caught Exiv2 exception '" << e.what() << std::endl;
     }

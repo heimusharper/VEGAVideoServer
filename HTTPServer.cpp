@@ -27,7 +27,7 @@ int HTTPServer::start()
       }
       void (*OnReq)(evhttp_request *req, void *) = [] (evhttp_request *req, void *)
       {
-std::cout << "<<<get image" << std::endl;
+          std::cout << "On request image..." << std::endl;
           Image *image = FFImageHttpSink::instance().getImage();
           if (image) {
               uint64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -41,6 +41,7 @@ std::cout << "<<<get image" << std::endl;
               evbuffer_free(evb);
               delete image;
           } else {
+              std::cout << "Failed get image, respond HTTP_NOCONTENT" << std::endl;
               evhttp_send_error(req, HTTP_NOCONTENT,  "Image stream not initialized");
           }
       };
