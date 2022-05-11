@@ -15,7 +15,8 @@
 class FFH264DecoderInstance
 {
 public:
-    FFH264DecoderInstance(const std::string& address, bool sync);
+    FFH264DecoderInstance(const std::string& address, bool sync,
+                          const std::string &preset, const std::string &tune);
     FFH264DecoderInstance(const FFH264DecoderInstance&c) = delete;
     virtual ~FFH264DecoderInstance();
 

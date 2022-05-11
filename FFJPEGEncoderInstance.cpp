@@ -1,11 +1,14 @@
 #include "FFJPEGEncoderInstance.h"
 
-FFJPEGEncoderInstance::FFJPEGEncoderInstance(const std::string& address, bool sync, int w, int h)
+FFJPEGEncoderInstance::FFJPEGEncoderInstance(const std::string& address, bool sync, int w,
+                                             int h, const std::string &preset,
+                                             const std::string &tune, int quality)
     : m_sync(sync)
     , m_targetW(w)
     , m_targetH(h)
+    , m_quality(quality)
 {
-    m_decoder = new FFH264DecoderInstance(address, sync);
+    m_decoder = new FFH264DecoderInstance(address, sync, preset, tune);
     //av_log_set_level(AV_LOG_TRACE);
     avdevice_register_all();
     avcodec_register_all();
@@ -58,7 +61,7 @@ std::cout << "got" <<std::endl;
         m_jpegContext->thread_count = std::max(2, m_jpegContext->thread_count);
         // m_jpegContext->qmin = 1;
         // m_jpegContext->qmax = 2;
-        av_opt_set(m_jpegContext->priv_data, "q", "30", 0);
+        av_opt_set(m_jpegContext->priv_data, "q", std::to_string(m_quality).c_str(), 0);
         if (int err = avcodec_open2(m_jpegContext, jpegCodec, &options) < 0) {
             std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
         } else {

@@ -39,6 +39,9 @@ void showHelp()
     std::cout << " --sync -- sync video DTS/PTS if [src] is file" << std::endl;
     std::cout << " --out_width -- output frame width" << std::endl;
     std::cout << " --out_height -- output frame height" << std::endl;
+    std::cout << " --preset -- h264 decoder preset(libx264)" << std::endl;
+    std::cout << " --tune -- h264 decoder tune(libx264)" << std::endl;
+    std::cout << " --quality -- JPEG encoder cuality level [30 default]" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -90,6 +93,17 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    int quality = 30;
+
+    if (cmdOptionExists(argv, argv + argc, "--quality"))
+        quality = std::stoi(std::string(getCmdOption(argv, argv + argc, "--quality")));
+    std::string preset = "ultrafast";
+    if (cmdOptionExists(argv, argv + argc, "--preset"))
+        preset = std::string(getCmdOption(argv, argv + argc, "--preset"));
+    std::string tune = "zerolatency";
+    if (cmdOptionExists(argv, argv + argc, "--tune"))
+        tune = std::string(getCmdOption(argv, argv + argc, "--tune"));
+
     // video
     //
     int videoWidth = 0;
@@ -101,7 +115,8 @@ int main(int argc, char *argv[])
     bool sync = cmdOptionExists(argv, argv + argc, "--sync");
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
 
-    FFImageHttpSink::instance().create(video, sync, videoWidth, videoHeight);
+    FFImageHttpSink::instance().create(video, sync, videoWidth, videoHeight,
+                                       preset, tune, quality);
 
     // MavProxy
     //

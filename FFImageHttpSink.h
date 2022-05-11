@@ -24,7 +24,8 @@ public:
 
     static FFImageHttpSink &instance();
 
-    void create(const std::string& str, bool sync, int w, int h);
+    void create(const std::string& str, bool sync, int w, int h,
+                const std::string &preset, const std::string &tune, int quality);
 
     Image *getImage();
 

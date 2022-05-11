@@ -17,10 +17,11 @@ FFImageHttpSink &FFImageHttpSink::instance()
     return s;
 }
 
-void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h)
+void FFImageHttpSink::create(const std::string& str, bool sync, int w, int h,
+                             const std::string &preset, const std::string &tune, int quality)
 {
-std::cout << "create sink " << str << "s " << sync << " w " << w << " h " << h << std::endl;
-    m_sink = new FFJPEGEncoderInstance(str, sync, w, h);
+    std::cout << "create sink " << str << "s " << sync << " w " << w << " h " << h << std::endl;
+    m_sink = new FFJPEGEncoderInstance(str, sync, w, h, preset, tune, quality);
 }
 
 Image *FFImageHttpSink::getImage()

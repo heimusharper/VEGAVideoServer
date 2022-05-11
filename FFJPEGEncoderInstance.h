@@ -6,7 +6,9 @@
 class FFJPEGEncoderInstance
 {
 public:
-    FFJPEGEncoderInstance(const std::string& address, bool sync, int w, int h);
+    FFJPEGEncoderInstance(const std::string& address, bool sync, int w, int h,
+                          const std::string& preset, const std::string&tune,
+                          int quality);
     FFJPEGEncoderInstance(const FFJPEGEncoderInstance&c) = delete;
     virtual ~FFJPEGEncoderInstance();
 
@@ -34,6 +36,8 @@ private:
     bool m_sync;
     int m_targetW;
     int m_targetH;
+
+    int m_quality;
 
     int w = 0;
     int h = 0;

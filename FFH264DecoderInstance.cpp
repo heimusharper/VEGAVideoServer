@@ -1,6 +1,7 @@
 #include "FFH264DecoderInstance.h"
 
-FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync)
+FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sync,
+                                             const std::string &preset, const std::string &tune)
     : m_sync(sync)
 {
     //av_log_set_level(AV_LOG_TRACE);
@@ -9,7 +10,7 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string& address, bool sy
     avformat_network_init();
 
     m_player = new FFPlayerInstance(address, m_sync,
-        [this](AVStream* stream) -> bool {
+        [this, preset, tune](AVStream* stream) -> bool {
 #if defined (USE_NVMPI)
 std::cout << "codec" << stream->codec->codec_id << " " << (int)AV_CODEC_ID_H264 << std::endl;
             if (stream->codec->codec_id == AV_CODEC_ID_H264)
@@ -35,8 +36,8 @@ std::cout << "codec" << stream->codec->codec_id << " " << (int)AV_CODEC_ID_H264 
 #else
                     if (stream->codec->codec_id == AV_CODEC_ID_H264)
                     {
-                        av_opt_set(m_videoCodecContext->priv_data, "preset", "ultrafast", 0);
-                        av_opt_set(m_videoCodecContext->priv_data, "tune", "zerolatency", 0);
+                        av_opt_set(m_videoCodecContext->priv_data, "preset", preset.c_str(), 0);
+                        av_opt_set(m_videoCodecContext->priv_data, "tune", tune.c_str(), 0);
                         av_opt_set(m_videoCodecContext->priv_data, "crf", "23", 0);
                     }
                     m_videoCodecContext->thread_count = std::max(4, m_videoCodecContext->thread_count);
@@ -72,8 +73,6 @@ FFH264DecoderInstance::~FFH264DecoderInstance()
 
 void FFH264DecoderInstance::run()
 {
-
-    SwsContext* yuv420_conversion = nullptr;
     std::queue<AVPacket*> packets;
     while (!m_stop.load())
     {
@@ -95,19 +94,21 @@ void FFH264DecoderInstance::run()
                         std::cout << "FFMpeg failure put queue packet";
                     else if (error == 0) {
                         AVFrame *frame = av_frame_alloc();
-                        int decErr = avcodec_receive_frame(m_videoCodecContext, frame);
-                        if (decErr == 0)
-                        {
-                            m_frameLock.lock();
-                            if (m_frame)
-                                av_frame_unref(m_frame);
-                            else
-                                m_frame = av_frame_alloc();
-                            m_lastFrame = std::chrono::system_clock::now();
-                            av_frame_ref(m_frame, frame);
-                            m_frameLock.unlock();
+                        if (frame) {
+                            int decErr = avcodec_receive_frame(m_videoCodecContext, frame);
+                            if (decErr == 0)
+                            {
+                                m_frameLock.lock();
+                                if (m_frame)
+                                    av_frame_unref(m_frame);
+                                else
+                                    m_frame = av_frame_alloc();
+                                m_lastFrame = std::chrono::system_clock::now();
+                                av_frame_ref(m_frame, frame);
+                                m_frameLock.unlock();
+                            }
+                            av_frame_unref(frame);
                         }
-                        av_frame_unref(frame);
                     }
                 }
                 av_packet_free(&pkt);
@@ -118,6 +119,4 @@ void FFH264DecoderInstance::run()
             usleep(10000);
         }
     }
-    if (yuv420_conversion)
-        sws_freeContext(yuv420_conversion);
 }
