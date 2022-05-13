@@ -1,6 +1,8 @@
 #ifndef IPACKETREADER_H
 #define IPACKETREADER_H
 #include "FFImageFrame.h"
+#include <boost/lockfree/spsc_queue.hpp>
+#include <iostream>
 
 class IPacketReader
 {
@@ -9,7 +11,7 @@ public:
     AVPacket* takePacket()
     {
         try {
-            while (m_packets.read_available() > 0)
+            if (m_packets.read_available() > 0)
             {
                 AVPacket *pkt = m_packets.front();
                 m_packets.pop();
@@ -21,10 +23,12 @@ public:
     }
     void flushPacket(AVPacket *pkt)
     {
-        if (m_packets.write_available()) {
+        if (m_packets.write_available() > 0) {
             AVPacket *newp = av_packet_alloc();
+            newp->pts = pkt->pts;
+            newp->dts = pkt->dts;
             av_packet_ref(newp, pkt);
-            m_packets.push(pkt);
+            m_packets.push(newp);
         }
     }
 

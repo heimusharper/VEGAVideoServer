@@ -85,7 +85,6 @@ void FFPlayerInstance::run()
                     sleepTime -= workTime;
                 } else {
                 }
-                usleep((sleepTime > 0) ? sleepTime : 10);
                 for (auto x : m_readers)
                     x->flushPacket(pkt);
             }

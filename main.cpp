@@ -111,17 +111,8 @@ int main(int argc, char *argv[])
     std::string output;
     if (cmdOptionExists(argv, argv + argc, "--out"))
     {
-        time_t     now = time(0);
-        struct tm  tstruct;
-        char       buf[80];
-        tstruct = *localtime(&now);
-        // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-        // for more information about date/time format
-        strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-
         writeOut = true;
         output = getCmdOption(argv, argv + argc, "--out");
-        output = output + "_";
     }
 
     // video
@@ -144,7 +135,7 @@ int main(int argc, char *argv[])
     FFH264DecoderInstance *decoder = new FFH264DecoderInstance(preset, tune);
     player.addReader(decoder);
     if (writeOut) {
-        FFMpegFileSave *saveFile = new FFMpegFileSave();
+        FFMpegFileSave *saveFile = new FFMpegFileSave(output);
         player.addReader(saveFile);
     }
     // http output

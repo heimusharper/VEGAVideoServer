@@ -82,11 +82,11 @@ void FFH264DecoderInstance::run()
                 if (error == AVERROR_EOF)
                     std::cout << "FFmpeg buf EOF";
                 else if (error == AVERROR(EAGAIN))
-                    std::cout << "FFmpeg buf EAGAIN";
+                    std::cout << "FFmpeg buf EAGAIN" << std::endl;
                 else if (error == AVERROR(EINVAL))
-                    std::cout << "FFmpeg EINVAL codec not opened";
+                    std::cout << "FFmpeg EINVAL codec not opened" << std::endl;
                 else if (error == AVERROR(ENOMEM))
-                    std::cout << "FFMpeg failure put queue packet";
+                    std::cout << "FFMpeg failure put queue packet" << std::endl;
                 else if (error == 0) {
                     AVFrame *frame = av_frame_alloc();
                     if (frame) {

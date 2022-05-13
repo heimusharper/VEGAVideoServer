@@ -21,11 +21,15 @@ public:
 private:
     void run();
 private:
+    const std::string m_suffix;
 
     std::atomic_bool m_stop;
     std::thread *m_mainThread;
 
-    const std::string m_suffix;
+    std::mutex m_contextLock;
+
+    AVStream *m_sourceStream = nullptr;
+    AVFormatContext *m_context = nullptr;
 };
 
 #endif // FFMPEGFILESAVE_H
