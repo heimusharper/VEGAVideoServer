@@ -1,6 +1,6 @@
 #ifndef HTTPSERVER_H
 #define HTTPSERVER_H
-#include "FFImageHttpSink.h"
+#include "JPEGHttpSink.h"
 #include <chrono>
 #include <thread>
 #include <cstdint>

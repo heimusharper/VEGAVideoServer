@@ -1,6 +1,6 @@
-#include "FFH264DecoderInstance.h"
+#include "Decoder.h"
 
-FFH264DecoderInstance::FFH264DecoderInstance(const std::string &preset, const std::string &tune)
+Decoder::Decoder(const std::string &preset, const std::string &tune)
     : IPacketReader()
     , m_sync(sync)
     , m_preset(preset)
@@ -12,10 +12,10 @@ FFH264DecoderInstance::FFH264DecoderInstance(const std::string &preset, const st
     avformat_network_init();
 
     m_stop.store(false);
-    m_mainThread = new std::thread(&FFH264DecoderInstance::run, this);
+    m_mainThread = new std::thread(&Decoder::run, this);
 }
 
-FFH264DecoderInstance::~FFH264DecoderInstance()
+Decoder::~Decoder()
 {
     m_stop.store(true);
     if (m_mainThread->joinable())
@@ -23,7 +23,7 @@ FFH264DecoderInstance::~FFH264DecoderInstance()
     delete m_mainThread;
 }
 
-void FFH264DecoderInstance::onCreateStream(AVStream *stream)
+void Decoder::onCreateStream(AVStream *stream)
 {
 #if defined (USE_NVMPI)
     std::cout << "codec" << stream->codec->codec_id << " " << (int)AV_CODEC_ID_H264 << std::endl;
@@ -70,7 +70,7 @@ void FFH264DecoderInstance::onCreateStream(AVStream *stream)
     //    std::cout << "failed detect codec [h264, ]";
 }
 
-void FFH264DecoderInstance::run()
+void Decoder::run()
 {
     AVPacket* packet = nullptr;
     while (!m_stop.load())

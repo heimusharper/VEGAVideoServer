@@ -75,30 +75,32 @@ INCLUDE_DIRECTORIES(${GeoInterface_INCLUDE_DIRS})
 
 SET(HEADERS_LIST
     helper.h
+    Decoder.h
+    EncoderJPEG.h
+    IPacketReader.h
+    JPEGHttpSink.h
+    VideoSource.h
+    HTTPServer.h
+    FileSave.h
+
     MavContext.h
     MavlinkParser.h
-    FFImageFrame.h
-    FFPlayerInstance.h
-    FFH264DecoderInstance.h
-    FFImageHttpSink.h
-    HTTPServer.h
-    FFJPEGEncoderInstance.h
     MavUDP.h
-    IPacketReader.h
-    FFMpegFileSave.h
+
     )
 SET(SOURCES_LIST
+    Decoder.cpp
+    EncoderJPEG.cpp
+    JPEGHttpSink.cpp
+    VideoSource.cpp
+    HTTPServer.cpp
+    FileSave.cpp
+
     MavContext.cpp
     MavlinkParser.cpp
-    FFImageFrame.cpp
-    FFPlayerInstance.cpp
-    FFH264DecoderInstance.cpp
-    FFImageHttpSink.cpp
-    HTTPServer.cpp
-    FFJPEGEncoderInstance.cpp
     MavUDP.cpp
+
     main.cpp
-    FFMpegFileSave.cpp
     )
 
 ADD_EXECUTABLE(VEGAVideoServer ${HEADERS_LIST} ${SOURCES_LIST})

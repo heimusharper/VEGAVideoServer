@@ -1,15 +1,15 @@
-#ifndef FFJPEGENCODERINSTANCE_H
-#define FFJPEGENCODERINSTANCE_H
+#ifndef ENCODERJPEG_H
+#define ENCODERJPEG_H
 
-#include "FFH264DecoderInstance.h"
-#include "FFMpegFileSave.h"
+#include "Decoder.h"
+#include "FileSave.h"
 
-class FFJPEGEncoderInstance
+class EncoderJPEG
 {
 public:
-    FFJPEGEncoderInstance(FFH264DecoderInstance *decoder, int w, int h, int quality);
-    FFJPEGEncoderInstance(const FFJPEGEncoderInstance&c) = delete;
-    virtual ~FFJPEGEncoderInstance();
+    EncoderJPEG(Decoder *decoder, int w, int h, int quality);
+    EncoderJPEG(const EncoderJPEG&c) = delete;
+    virtual ~EncoderJPEG();
 
     AVPacket *takeFrame();
 
@@ -43,8 +43,8 @@ private:
 
     float m_scaleFactor = 1;
 
-    FFH264DecoderInstance *m_decoder = nullptr;
-    FFMpegFileSave *m_encoder = nullptr;
+    Decoder *m_decoder = nullptr;
+    FileSave *m_encoder = nullptr;
     // decoder
     AVCodecContext *m_jpegContext = nullptr;
     SwsContext* yuv420_conversion = nullptr;

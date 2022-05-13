@@ -1,5 +1,5 @@
-#ifndef FFPLAYERINSTANCE_H
-#define FFPLAYERINSTANCE_H
+#ifndef VIDEOSOURCE_H
+#define VIDEOSOURCE_H
 
 #include "helper.h"
 #include <atomic>
@@ -13,11 +13,11 @@
 #include <queue>
 #include <thread>
 
-class FFPlayerInstance
+class VideoSource
 {
 public:
-    FFPlayerInstance();
-    ~FFPlayerInstance();
+    VideoSource();
+    ~VideoSource();
 
     void start(const std::string& address, bool sync);
 

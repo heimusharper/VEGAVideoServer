@@ -1,28 +1,28 @@
-#include "FFImageHttpSink.h"
+#include "JPEGHttpSink.h"
 
-FFImageHttpSink::FFImageHttpSink()
+JPEGHttpSink::JPEGHttpSink()
 {
     Exiv2::XmpProperties::registerNs("http://ns.drone-dji.com/", "drone-dji");
 }
 
-FFImageHttpSink::~FFImageHttpSink()
+JPEGHttpSink::~JPEGHttpSink()
 {
     if (m_sink)
         delete m_sink;
 }
 
-void FFImageHttpSink::init(FFJPEGEncoderInstance *sink)
+void JPEGHttpSink::init(EncoderJPEG *sink)
 {
     m_sink = sink;
 }
 
-FFImageHttpSink &FFImageHttpSink::instance()
+JPEGHttpSink &JPEGHttpSink::instance()
 {
-    static FFImageHttpSink s;
+    static JPEGHttpSink s;
     return s;
 }
 
-Image *FFImageHttpSink::getImage()
+Image *JPEGHttpSink::getImage()
 {
     if (!m_sink) {
         std::cout << "Stream not initialized" << std::endl;

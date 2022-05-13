@@ -1,5 +1,6 @@
 #include "HTTPServer.h"
 #include <event.h>
+
 HTTPServer::HTTPServer(const HTTPServerConfiguration &config)
     : m_config(config)
 {
@@ -27,7 +28,7 @@ int HTTPServer::start()
       void (*OnReq)(evhttp_request *req, void *) = [] (evhttp_request *req, void *)
       {
           std::cout << "On request image..." << std::endl;
-          Image *image = FFImageHttpSink::instance().getImage();
+          Image *image = JPEGHttpSink::instance().getImage();
           if (image) {
               uint64_t time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 

@@ -1,6 +1,6 @@
 #ifndef IPACKETREADER_H
 #define IPACKETREADER_H
-#include "FFImageFrame.h"
+#include "helper.h"
 #include <boost/lockfree/spsc_queue.hpp>
 #include <iostream>
 

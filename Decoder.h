@@ -1,11 +1,10 @@
-#ifndef FFH264DECODERINSTANCE_H
-#define FFH264DECODERINSTANCE_H
+#ifndef DECODER_H
+#define DECODER_H
 
 #if defined (USE_NVMPI)
 #include <nvmpi.h>
 #endif
 #include "helper.h"
-#include "FFImageFrame.h"
 #include <iostream>
 #include <thread>
 #include "MavContext.h"
@@ -15,12 +14,12 @@
 #include "IPacketReader.h"
 #include <queue>
 
-class FFH264DecoderInstance : public IPacketReader
+class Decoder : public IPacketReader
 {
 public:
-    FFH264DecoderInstance(const std::string &preset, const std::string &tune);
-    FFH264DecoderInstance(const FFH264DecoderInstance&c) = delete;
-    virtual ~FFH264DecoderInstance();
+    Decoder(const std::string &preset, const std::string &tune);
+    Decoder(const Decoder&c) = delete;
+    virtual ~Decoder();
 
     virtual void onCreateStream(AVStream *stream) override;
 

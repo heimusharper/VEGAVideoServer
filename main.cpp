@@ -4,7 +4,7 @@
 #include "MavUDP.h"
 #include <HeightSource.h>
 #include <HeightSourceHGT1M.h>
-#include "FFPlayerInstance.h"
+#include "VideoSource.h"
 
 char* getCmdOption(char ** begin, char ** end, const std::string & option)
 {
@@ -130,18 +130,18 @@ int main(int argc, char *argv[])
     avcodec_register_all();
     avformat_network_init();
 
-    FFPlayerInstance player;
+    VideoSource player;
     // create readers
-    FFH264DecoderInstance *decoder = new FFH264DecoderInstance(preset, tune);
+    Decoder *decoder = new Decoder(preset, tune);
     player.addReader(decoder);
     if (writeOut) {
-        FFMpegFileSave *saveFile = new FFMpegFileSave(output);
+        FileSave *saveFile = new FileSave(output);
         player.addReader(saveFile);
     }
     // http output
-    FFJPEGEncoderInstance *encoder = new FFJPEGEncoderInstance(decoder, videoWidth, videoHeight, quality);
+    EncoderJPEG *encoder = new EncoderJPEG(decoder, videoWidth, videoHeight, quality);
 
-    FFImageHttpSink::instance().init(encoder);
+    JPEGHttpSink::instance().init(encoder);
 
     // start processing
     player.start(video, sync);

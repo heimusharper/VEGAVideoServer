@@ -1,14 +1,14 @@
-#include "FFMpegFileSave.h"
+#include "FileSave.h"
 
-FFMpegFileSave::FFMpegFileSave(const std::string &suffix)
+FileSave::FileSave(const std::string &suffix)
     : IPacketReader()
     , m_suffix(suffix)
 {
     m_stop.store(false);
-    m_mainThread = new std::thread(&FFMpegFileSave::run, this);
+    m_mainThread = new std::thread(&FileSave::run, this);
 }
 
-FFMpegFileSave::~FFMpegFileSave()
+FileSave::~FileSave()
 {
     m_stop.store(true);
     if (m_mainThread->joinable())
@@ -16,14 +16,14 @@ FFMpegFileSave::~FFMpegFileSave()
     delete m_mainThread;
 }
 
-void FFMpegFileSave::onCreateStream(AVStream *stream)
+void FileSave::onCreateStream(AVStream *stream)
 {
     m_contextLock.lock();
     m_sourceStream = stream;
     m_contextLock.unlock();
 }
 
-void FFMpegFileSave::run()
+void FileSave::run()
 {
     AVStream *stream = nullptr;
     int64_t nowTime = 0;

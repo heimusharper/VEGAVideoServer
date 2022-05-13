@@ -1,7 +1,7 @@
-#ifndef FFIMAGEHTTPSINK_H
-#define FFIMAGEHTTPSINK_H
+#ifndef JPEGHTTPSINK_H
+#define JPEGHTTPSINK_H
 
-#include "FFJPEGEncoderInstance.h"
+#include "EncoderJPEG.h"
 #include <thread>
 #include "helper.h"
 #include <exiv2/exiv2.hpp>
@@ -17,21 +17,21 @@ struct Image {
     }
 };
 
-class FFImageHttpSink
+class JPEGHttpSink
 {
 public:
-    ~FFImageHttpSink();
+    ~JPEGHttpSink();
 
-    void init(FFJPEGEncoderInstance *sink);
+    void init(EncoderJPEG *sink);
 
-    static FFImageHttpSink &instance();
+    static JPEGHttpSink &instance();
 
     Image *getImage();
 
 private:
     // источник фреймов видео
-    FFJPEGEncoderInstance *m_sink = nullptr;
-    FFImageHttpSink();
+    EncoderJPEG *m_sink = nullptr;
+    JPEGHttpSink();
 };
 
 #endif // FFIMAGEHTTPSINK_H

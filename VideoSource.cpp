@@ -1,10 +1,10 @@
-#include "FFPlayerInstance.h"
+#include "VideoSource.h"
 
-FFPlayerInstance::FFPlayerInstance()
+VideoSource::VideoSource()
 {
 }
 
-FFPlayerInstance::~FFPlayerInstance()
+VideoSource::~VideoSource()
 {
     m_stop.store(true);
     if (m_mainThread->joinable())
@@ -12,15 +12,15 @@ FFPlayerInstance::~FFPlayerInstance()
     delete m_mainThread;
 }
 
-void FFPlayerInstance::start(const std::string &address, bool sync)
+void VideoSource::start(const std::string &address, bool sync)
 {
     m_sync = sync;
     m_address = address;
     m_stop.store(false);
-    m_mainThread = new std::thread(&FFPlayerInstance::run, this);
+    m_mainThread = new std::thread(&VideoSource::run, this);
 }
 
-void FFPlayerInstance::run()
+void VideoSource::run()
 {
     bool reloadStream = true;
 

@@ -1,6 +1,6 @@
-#include "FFJPEGEncoderInstance.h"
+#include "EncoderJPEG.h"
 
-FFJPEGEncoderInstance::FFJPEGEncoderInstance(FFH264DecoderInstance *decoder, int w,
+EncoderJPEG::EncoderJPEG(Decoder *decoder, int w,
                                              int h, int quality)
     : m_targetW(w)
     , m_targetH(h)
@@ -9,7 +9,7 @@ FFJPEGEncoderInstance::FFJPEGEncoderInstance(FFH264DecoderInstance *decoder, int
 {
 }
 
-AVPacket *FFJPEGEncoderInstance::takeFrame()
+AVPacket *EncoderJPEG::takeFrame()
 {
     AVFrame *frame = m_decoder->takeFrame();
     if (!frame)
@@ -108,7 +108,7 @@ AVPacket *FFJPEGEncoderInstance::takeFrame()
     return nullptr;
 }
 
-FFJPEGEncoderInstance::~FFJPEGEncoderInstance()
+EncoderJPEG::~EncoderJPEG()
 {
     delete m_decoder;
 }

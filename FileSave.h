@@ -1,7 +1,6 @@
-#ifndef FFMPEGFILESAVE_H
-#define FFMPEGFILESAVE_H
+#ifndef FILESAVE_H
+#define FILESAVE_H
 #include "helper.h"
-#include "FFImageFrame.h"
 #include <iostream>
 #include <thread>
 #include "MavContext.h"
@@ -11,11 +10,11 @@
 #include "IPacketReader.h"
 #include <queue>
 
-class FFMpegFileSave : public IPacketReader
+class FileSave : public IPacketReader
 {
 public:
-    FFMpegFileSave(const std::string &suffix);
-    virtual ~FFMpegFileSave();
+    FileSave(const std::string &suffix);
+    virtual ~FileSave();
     virtual void onCreateStream(AVStream *stream) override;
 
 private:
