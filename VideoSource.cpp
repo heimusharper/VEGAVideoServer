@@ -30,8 +30,6 @@ void VideoSource::run()
     //av_dict_set(&options, "fflags", "nobuffer",0);
 
     //! TODO без этого не инициализирует энкодер для jpeg
-    av_register_all();
-    avcodec_register_all();
     av_dict_set(&options, "threads", "auto",0);
 
     int videoStreamIndex = -1;
@@ -49,7 +47,7 @@ void VideoSource::run()
                 err = avformat_find_stream_info(input_format_ctx, NULL);
                 if (err >= 0) {
                     for (uint32_t i = 0; i < input_format_ctx->nb_streams; i++) {
-                        if (input_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+                        if (input_format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
                             videoStreamIndex = (int)i;
                             reloadStream = false; // done stream
                             for (auto x : m_readers)

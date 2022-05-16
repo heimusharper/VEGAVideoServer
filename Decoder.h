@@ -64,8 +64,6 @@ private:
     const std::string m_preset;
     const std::string m_tune;
 
-    bool m_sync;
-
     std::chrono::time_point<std::chrono::system_clock>
         m_lastFrame;
     std::mutex m_frameLock;

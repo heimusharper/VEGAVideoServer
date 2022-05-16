@@ -25,6 +25,7 @@ int HTTPServer::start()
         std::cerr << "Failed to init http server." << std::endl;
         return -1;
       }
+      LOG->info("Http server start at {}:{}", m_config.address, m_config.port);
       void (*OnReq)(evhttp_request *req, void *) = [] (evhttp_request *req, void *)
       {
           LOG->debug("On request image...");

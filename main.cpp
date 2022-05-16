@@ -143,8 +143,12 @@ int main(int argc, char *argv[])
     std::string video = std::string(getCmdOption(argv, argv + argc, "--src")); // "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4"
 
     avdevice_register_all();
+    avformat_network_init(); // av_log_set_level(AV_LOG_TRACE);
+    avdevice_register_all();
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 10, 100)
     avcodec_register_all();
-    avformat_network_init();
+    av_register_all();
+#endif
 
     VideoSource player;
     // create readers

@@ -1,9 +1,9 @@
 #ifndef MAVCONTEXT_H
 #define MAVCONTEXT_H
-#include <stdint.h>
-#include <HeightSource.h>
-#include "spdlog/fmt/fmt.h"
 #include "log.h"
+#include <HeightSource.h>
+#include <fmt/format.h>
+#include <stdint.h>
 
 class MavContext
 {

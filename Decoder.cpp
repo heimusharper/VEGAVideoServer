@@ -1,16 +1,10 @@
 #include "Decoder.h"
 
-Decoder::Decoder(const std::string &preset, const std::string &tune)
+Decoder::Decoder(const std::string& preset, const std::string& tune)
     : IPacketReader()
-    , m_sync(sync)
     , m_preset(preset)
     , m_tune(tune)
 {
-    //av_log_set_level(AV_LOG_TRACE);
-    avdevice_register_all();
-    avcodec_register_all();
-    avformat_network_init();
-
     m_stop.store(false);
     m_mainThread = new std::thread(&Decoder::run, this);
 }
@@ -31,24 +25,21 @@ void Decoder::onCreateStream(AVStream *stream)
 #endif
     {
         AVCodecParameters *codparam = avcodec_parameters_alloc();
-        if (int err = avcodec_parameters_from_context(codparam, stream->codec) >= 0) {
-
+        if (int err = avcodec_parameters_copy(codparam, stream->codecpar) >= 0) {
             AVDictionary *options = nullptr;
             //av_dict_set(&options, "fflags", "nobuffer", 0);
-
 #if defined (USE_NVMPI)
             LOG->info("Create H264 decoder...");
             AVCodec *acodec = avcodec_find_decoder_by_name("h264_nvmpi");
 #else
-            AVCodec *acodec = avcodec_find_decoder(stream->codec->codec_id);
+            const AVCodec* acodec = avcodec_find_decoder((AVCodecID)stream->codecpar->codec_id);
 #endif
             m_videoCodecContext = avcodec_alloc_context3(acodec);
             avcodec_parameters_to_context(m_videoCodecContext, codparam);
 
 #if defined (USE_NVMPI)
 #else
-            if (stream->codec->codec_id == AV_CODEC_ID_H264)
-            {
+            if (stream->codecpar->codec_id == AV_CODEC_ID_H264) {
                 av_opt_set(m_videoCodecContext->priv_data, "preset", m_preset.c_str(), 0);
                 av_opt_set(m_videoCodecContext->priv_data, "tune", m_tune.c_str(), 0);
                 av_opt_set(m_videoCodecContext->priv_data, "crf", "23", 0);

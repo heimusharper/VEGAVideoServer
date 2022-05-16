@@ -3,6 +3,7 @@
 
 #include "Decoder.h"
 #include "FileSave.h"
+#include "helper.h"
 
 class EncoderJPEG
 {
