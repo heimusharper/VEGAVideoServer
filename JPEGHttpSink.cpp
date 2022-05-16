@@ -25,14 +25,14 @@ JPEGHttpSink &JPEGHttpSink::instance()
 Image *JPEGHttpSink::getImage()
 {
     if (!m_sink) {
-        std::cout << "Stream not initialized" << std::endl;
+        LOG->warn("Stream not initialized");
         return nullptr;
     }
     //if (m_sink->lifetime() > 10000)
       //  return nullptr;
     AVPacket* frame = m_sink->takeFrame();
     if (!frame) {
-        std::cout << "Frame not exist" << std::endl;
+        LOG->warn("Frame not exist");
         return nullptr;
     }
     const float scaleFactor = m_sink->scaleFactor();
@@ -42,7 +42,7 @@ Image *JPEGHttpSink::getImage()
                 Exiv2::ImageFactory::open((Exiv2::byte *)frame->data, frame->size);
         // av_packet_unref(&frame);
         if (eximage.get() == 0) {
-            std::cout << "Failed get EXIF" << std::endl;
+            LOG->warn("Failed get EXIF");
             return nullptr;
         }
 #if EXIV2_TEST_VERSION(0,27,0)
@@ -162,7 +162,7 @@ Image *JPEGHttpSink::getImage()
         out->image = new char[file_size];
         memcpy(out->image, buff.pData_, file_size);
     } catch (Exiv2::Error &e){
-        std::cout << "Caught Exiv2 exception '" << e.what() << std::endl;
+        LOG->warn("Caught Exiv2 exception {}", e.what());
     }
     av_packet_unref(frame);
     return out;

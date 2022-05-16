@@ -6,6 +6,9 @@
 #include <HeightSourceHGT1M.h>
 #include "VideoSource.h"
 
+#include "log.h"
+#include "spdlog/sinks/stdout_sinks.h"
+
 char* getCmdOption(char ** begin, char ** end, const std::string & option)
 {
     char ** itr = std::find(begin, end, option);
@@ -27,6 +30,7 @@ void showHelp()
     std::cout << " -h -- this help" << std::endl;
     std::cout << " --src [URL] -- source video URL [\"http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4\"]" << std::endl;
     std::cout << " --out [out] -- output file suffix (path?) ie: /run/media/sd/out_DATE_TIME.mp4" << std::endl;
+    std::cout << " --telem-out -- if set --out, create telemetry file" << std::endl;
     std::cout << " --http-host [127.0.0.1] -- http server host" << std::endl;
     std::cout << " --http-port [8088] -- http server port" << std::endl;
     std::cout << " --mav-host [127.0.0.1] -- mavproxy udp host" << std::endl;
@@ -48,6 +52,15 @@ void showHelp()
 
 int main(int argc, char *argv[])
 {
+    try {
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+        console_sink->set_level(spdlog::level::debug);
+        // console_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
+        auto console = spdlog::stdout_logger_mt(LOGGER_NAME);
+        // spdlog::set_level(spdlog::level::debug);
+    } catch (const spdlog::spdlog_ex& e) {
+        std::cout << "Log initialization failed: " << e.what() << std::endl;
+    }
 
     if (cmdOptionExists(argv, argv + argc, "-h"))
     {
@@ -108,11 +121,14 @@ int main(int argc, char *argv[])
 
     // output
     bool writeOut = false;
+    bool writeTelem = false;
     std::string output;
     if (cmdOptionExists(argv, argv + argc, "--out"))
     {
         writeOut = true;
         output = getCmdOption(argv, argv + argc, "--out");
+        if (cmdOptionExists(argv, argv + argc, "--telem-out"))
+            writeTelem = true;
     }
 
     // video
@@ -135,7 +151,7 @@ int main(int argc, char *argv[])
     Decoder *decoder = new Decoder(preset, tune);
     player.addReader(decoder);
     if (writeOut) {
-        FileSave *saveFile = new FileSave(output);
+        FileSave *saveFile = new FileSave(output, writeTelem);
         player.addReader(saveFile);
     }
     // http output

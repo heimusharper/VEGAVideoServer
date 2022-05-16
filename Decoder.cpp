@@ -26,7 +26,7 @@ Decoder::~Decoder()
 void Decoder::onCreateStream(AVStream *stream)
 {
 #if defined (USE_NVMPI)
-    std::cout << "codec" << stream->codec->codec_id << " " << (int)AV_CODEC_ID_H264 << std::endl;
+    LOG->info("codec ID={} h264 ID={}", stream->codec->codec_id, (int)AV_CODEC_ID_H264);
     if (stream->codec->codec_id == AV_CODEC_ID_H264)
 #endif
     {
@@ -37,7 +37,7 @@ void Decoder::onCreateStream(AVStream *stream)
             //av_dict_set(&options, "fflags", "nobuffer", 0);
 
 #if defined (USE_NVMPI)
-            std::cout << "Create H264 decoder...";
+            LOG->info("Create H264 decoder...");
             AVCodec *acodec = avcodec_find_decoder_by_name("h264_nvmpi");
 #else
             AVCodec *acodec = avcodec_find_decoder(stream->codec->codec_id);
@@ -55,19 +55,17 @@ void Decoder::onCreateStream(AVStream *stream)
             }
             m_videoCodecContext->thread_count = std::max(4, m_videoCodecContext->thread_count);
 #endif
-            std::cout << "create codec" << std::endl;
+            LOG->info("create codec");
             if (avcodec_open2(m_videoCodecContext, nullptr, &options) < 0)
             {
-                std::cout << "failed open codec";
+                LOG->warn("failed open codec");
                 avcodec_free_context(&m_videoCodecContext);
             } else {
                 return;
             }
         } else
-            std::cout << "failed create new decoder" << AVHelper::av2str(err);
+            LOG->warn("failed create new decoder {}", AVHelper::av2str(err));
     }
-    //} else
-    //    std::cout << "failed detect codec [h264, ]";
 }
 
 void Decoder::run()
@@ -80,13 +78,13 @@ void Decoder::run()
             if (m_videoCodecContext) {
                 int error = avcodec_send_packet(m_videoCodecContext, packet);
                 if (error == AVERROR_EOF)
-                    std::cout << "FFmpeg buf EOF";
+                    LOG->warn("FFmpeg buf EOF");
                 else if (error == AVERROR(EAGAIN))
-                    std::cout << "FFmpeg buf EAGAIN" << std::endl;
+                    LOG->warn("FFmpeg buf EAGAIN");
                 else if (error == AVERROR(EINVAL))
-                    std::cout << "FFmpeg EINVAL codec not opened" << std::endl;
+                    LOG->warn("FFmpeg EINVAL codec not opened");
                 else if (error == AVERROR(ENOMEM))
-                    std::cout << "FFMpeg failure put queue packet" << std::endl;
+                    LOG->warn("FFMpeg failure put queue packet");
                 else if (error == 0) {
                     AVFrame *frame = av_frame_alloc();
                     if (frame) {

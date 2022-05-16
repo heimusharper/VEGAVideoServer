@@ -136,6 +136,7 @@ void MavlinkParser::read(const mavlink_message_t &msg)
                             0, 0, 0, 0, 0, 0, 0, 0);
                 m_messageToSend.push(message);
             }
+            MavContext::instance().setSatelites(gps.satellites_visible);
             MavContext::instance().setTime(gps.time_usec);
             m_gpsFixType = gps.fix_type;
             break;
@@ -144,7 +145,9 @@ void MavlinkParser::read(const mavlink_message_t &msg)
         {
             mavlink_home_position_t home;
             mavlink_msg_home_position_decode(&msg, &home);
-            MavContext::instance().setHomeAlt(home.altitude);
+            MavContext::instance().setHomeAlt((float)((double)home.altitude / 100.));
+
+            LOG->info("On home received {} {} {} ", home.latitude, home.longitude, home.altitude);
             break;
         }
         case MAVLINK_MSG_ID_DATA32: {

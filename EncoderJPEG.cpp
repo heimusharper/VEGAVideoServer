@@ -39,7 +39,7 @@ AVPacket *EncoderJPEG::takeFrame()
         AVDictionary *options = nullptr;
         av_dict_set(&options, "fflags", "nobuffer", 0);
 
-        std::cout << "Create mJPEG encoder...";
+        LOG->info("Create mJPEG encoder...");
         AVCodec *jpegCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
         m_jpegContext = avcodec_alloc_context3(jpegCodec);
         m_jpegContext->bit_rate = m_decoder->bitrate();
@@ -55,7 +55,7 @@ AVPacket *EncoderJPEG::takeFrame()
         // m_jpegContext->qmax = 2;
         av_opt_set(m_jpegContext->priv_data, "q", std::to_string(m_quality).c_str(), 0);
         if (int err = avcodec_open2(m_jpegContext, jpegCodec, &options) < 0) {
-            std::cout << "failed create mJPEG encoder" << AVHelper::av2str(err);
+            LOG->info("failed create mJPEG encoder {}", AVHelper::av2str(err));
         } else {
             yuv420_conversion = sws_getContext(frame->width, frame->height, (AVPixelFormat)frame->format,
                 targetWidth, targetHeight, AV_PIX_FMT_YUV420P,

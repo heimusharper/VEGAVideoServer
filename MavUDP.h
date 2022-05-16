@@ -17,6 +17,7 @@
 #include <map>
 #include "MavlinkParser.h"
 #include <iostream>
+#include "log.h"
 
 typedef int UDPSocket;
 class MavUDP

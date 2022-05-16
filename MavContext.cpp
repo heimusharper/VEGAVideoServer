@@ -11,6 +11,16 @@ MavContext::MavContext()
 
 }
 
+int MavContext::satelites() const
+{
+    return m_satelites;
+}
+
+void MavContext::setSatelites(int newSatelites)
+{
+    m_satelites = newSatelites;
+}
+
 int64_t MavContext::time() const
 {
     return m_time;
@@ -19,6 +29,50 @@ int64_t MavContext::time() const
 void MavContext::setTime(int64_t newTime)
 {
     m_time = newTime;
+}
+
+std::string MavContext::header() const
+{
+    return fmt::format(std::locale("en_US.UTF-8"),
+                       "Ширина сенсора: {:.2f}\r\n"
+                       "Высота сенсора: {:.2f}\r\n"
+                       "Фокусное расстояние: {:.2f}\r\n"
+                       "Кроп фактор матрицы: {:.2f}\r\n"
+                       "Время (миллисекунды)\tДата время (UTC)\tШирота\tДолгота\tВысота от точки старта (метры)\tВысота от мирового океана (метры)\tСкорость (м/с)\tКоличество спутников\tСкорость по оси X (м/с)\tСкорость по оси Y (м/с)\tСкорость по оси Z(м/с)\tКурс БВС(град.)\tТангаж БВС(град.)\tКрен БВС(град.)\tВидео (N в сессии)\tКурс подвеса(град.)\tТангаж подвеса(град.)\tZoom\r\n"
+                       "======\r\n",
+                       m_xResolution,
+                       m_yResolution,
+                       m_focalLength,
+                       m_crop
+               );
+}
+
+std::string MavContext::line(int64_t timeMS, tm time) const
+{
+    LOG->debug("INF");
+    return fmt::format(std::locale("en_US.UTF-8"), "{}\t{}-{}-{} {}:{}:{}\t{:.8f}\t{:.8f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.1f}\t{:.1f}\t{:.1f}\t0\t{:.1f}\t{:.1f}\t{}\r\n",
+                       timeMS,
+                       time.tm_year,
+                       time.tm_mon,
+                       time.tm_mday,
+                       time.tm_hour,
+                       time.tm_min,
+                       time.tm_sec,
+                       m_lat,
+                       m_lon,
+                       m_alt, // agl
+                       m_alt + m_homeAlt, // msl
+                       std::sqrt(m_speedX * m_speedX + m_speedY * m_speedY),
+                       m_satelites,
+                       m_speedX,
+                       m_speedY,
+                       m_speedZ,
+                       m_yaw,
+                       m_pitch,
+                       m_roll,
+                       m_gmbYaw,
+                       m_gmbRoll,
+                       m_zoom);
 }
 
 int MavContext::zoom() const

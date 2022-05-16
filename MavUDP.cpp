@@ -45,14 +45,14 @@ void MavUDP::run()
                 {
                     close(sock);
                     sock = -1;
-                    std::cout << "Failed bind UDP connection " << m_hostName << ":" << m_port << strerror(errno);
+                    LOG->warn("Failed bind UDP connection {}:{} {}", m_hostName, m_port, strerror(errno));
                 }
                 else
-                    std::cout << "Done bind server " << m_port;
+                    LOG->info("Done bind server {}:{}", m_hostName, m_port);
             }
             else
             {
-                std::cout << "Failed to create UDP connection " << m_hostName << ":" << m_port;
+                LOG->info("Failed to create UDP connection {}:{}", m_hostName, m_port);
                 sock = -1;
             }
         }
@@ -67,7 +67,7 @@ void MavUDP::run()
             {
                 if (m_clients.find(cliaddr) == m_clients.end())
                 {
-                    std::cout << "New client " << cliaddr.sin_port;
+                    LOG->info("New client {}", cliaddr.sin_port);
                     // create new
                     MavlinkParser *c = new MavlinkParser(m_gcsID);
                     m_clients.insert(std::pair(cliaddr, c));

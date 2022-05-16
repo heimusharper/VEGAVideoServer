@@ -2,6 +2,8 @@
 #define MAVCONTEXT_H
 #include <stdint.h>
 #include <HeightSource.h>
+#include "spdlog/fmt/fmt.h"
+#include "log.h"
 
 class MavContext
 {
@@ -73,6 +75,12 @@ public:
     int64_t time() const;
     void setTime(int64_t newTime);
 
+    std::string header() const;
+    std::string line(int64_t timeMS, struct tm time) const;
+
+    int satelites() const;
+    void setSatelites(int newSatelites);
+
 private:
     MavContext();
 
@@ -106,6 +114,8 @@ private:
     int m_camOrientationEXIF = 1;
 
     int m_zoom = 1;
+
+    int m_satelites = 0;
 
 };
 

@@ -2,7 +2,7 @@
 #define IPACKETREADER_H
 #include "helper.h"
 #include <boost/lockfree/spsc_queue.hpp>
-#include <iostream>
+#include "log.h"
 
 class IPacketReader
 {

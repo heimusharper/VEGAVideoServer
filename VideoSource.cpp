@@ -59,9 +59,9 @@ void VideoSource::run()
                     }
                     continue;
                 } else
-                    std::cout << "failed find stream info, error " << AVHelper::av2str(err) << std::endl << std::flush;
+                    LOG->warn("failed find stream info, error {}", AVHelper::av2str(err));
             } else
-                std::cout << "failed open input, error " << AVHelper::av2str(err) << std::endl << std::flush;
+                LOG->warn("failed open input, error {}", AVHelper::av2str(err));
 
             avformat_free_context(input_format_ctx);
             usleep(1000000);

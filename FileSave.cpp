@@ -1,8 +1,9 @@
 #include "FileSave.h"
 
-FileSave::FileSave(const std::string &suffix)
+FileSave::FileSave(const std::string &suffix, bool telem)
     : IPacketReader()
     , m_suffix(suffix)
+    , m_telem(telem)
 {
     m_stop.store(false);
     m_mainThread = new std::thread(&FileSave::run, this);
@@ -27,6 +28,10 @@ void FileSave::run()
 {
     AVStream *stream = nullptr;
     int64_t nowTime = 0;
+    bool firstFrame = true;
+
+    std::fstream telemStream;
+
     while(!m_stop.load())
     {
         int sleepTime = 10;
@@ -35,14 +40,16 @@ void FileSave::run()
             nowTime = MavContext::instance().time() / 1000000.;
             m_contextLock.lock();
             if (nowTime > 0 && m_sourceStream) {
-                struct tm  tstruct;
-                time_t nowTime_t = nowTime;
-                memcpy(&tstruct, localtime(&nowTime_t), sizeof(struct tm));
                 char *buf = new char[80];
+                auto tstruct = now();
                 std::strftime(buf, 80, "%Y_%m_%d_%H_%M_%S", &tstruct);
                 std::string filename = m_suffix + "_" + std::string((const char*)buf) + ".mp4";
+                if (m_telem) {
+                    std::string telemfile = m_suffix + "_" + std::string((const char*)buf) + ".csv";
+                    telemStream.open(telemfile, std::ios_base::out);
+                }
                 delete [] buf;
-                std::cout << "Create file " << filename << std::endl;
+                LOG->info("Create file {}", filename);
                 // create stream
                 if (int err = avformat_alloc_output_context2(&m_context, NULL, NULL, filename.c_str()) < 0)
                 {
@@ -101,6 +108,20 @@ void FileSave::run()
                 if (int err = av_interleaved_write_frame(m_context, pkt) < 0)
                 {
                     // failure
+                } else {
+                    if (m_telem && telemStream.is_open())
+                    {
+                        auto nowTime = std::chrono::high_resolution_clock::now();
+                        if (firstFrame) {
+                            m_streamStart = nowTime;
+                            telemStream << MavContext::instance().header();
+                            firstFrame = false;
+                        }
+                        int64_t wt = std::chrono::duration_cast<std::chrono::milliseconds>(nowTime - m_streamStart).count();
+
+                        std::string line = MavContext::instance().line(wt, now());
+                        telemStream << line;
+                    }
                 }
                 av_packet_unref(pkt);
             }
@@ -114,4 +135,6 @@ void FileSave::run()
         avformat_free_context(m_context);
         m_context = nullptr;
     }
+    if (telemStream.is_open())
+        telemStream.close();
 }
