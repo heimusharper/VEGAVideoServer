@@ -33,39 +33,37 @@ AVPacket *EncoderJPEG::takeFrame()
         targetWidth = m_targetW;
     }
 
-    if (!m_jpegContext)
-    {
+    if (!m_jpegEncoderContext) {
 
         AVDictionary *options = nullptr;
         av_dict_set(&options, "fflags", "nobuffer", 0);
 
         LOG->info("Create mJPEG encoder...");
         const AVCodec* jpegCodec = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
-        m_jpegContext = avcodec_alloc_context3(jpegCodec);
-        m_jpegContext->bit_rate = m_decoder->bitrate();
-        m_jpegContext->pix_fmt = AV_PIX_FMT_YUVJ420P; // m_videoCodecContext->pix_fmt;
-        m_jpegContext->height = targetHeight;
-        m_jpegContext->width = targetWidth;
+        m_jpegEncoderContext = avcodec_alloc_context3(jpegCodec);
+        m_jpegEncoderContext->bit_rate = m_decoder->bitrate();
+        m_jpegEncoderContext->pix_fmt = AV_PIX_FMT_YUVJ420P; // m_videoCodecContext->pix_fmt;
+        m_jpegEncoderContext->height = targetHeight;
+        m_jpegEncoderContext->width = targetWidth;
         // m_jpegContext->sample_aspect_ratio = m_videoCodecContext->sample_aspect_ratio;
-        m_jpegContext->time_base = AVRational{1, 25};// m_videoCodecContext->time_base;
-        m_jpegContext->flags |= AV_CODEC_FLAG_QSCALE;
-        m_jpegContext->flags |= AVFMT_FLAG_NOBUFFER | AVFMT_FLAG_FLUSH_PACKETS;
-        m_jpegContext->thread_count = std::max(2, m_jpegContext->thread_count);
+        m_jpegEncoderContext->time_base = AVRational { 1, 25 }; // m_videoCodecContext->time_base;
+        m_jpegEncoderContext->flags |= AV_CODEC_FLAG_QSCALE;
+        m_jpegEncoderContext->flags |= AVFMT_FLAG_NOBUFFER | AVFMT_FLAG_FLUSH_PACKETS;
+        m_jpegEncoderContext->thread_count = std::max(2, m_jpegEncoderContext->thread_count);
         // m_jpegContext->qmin = 1;
         // m_jpegContext->qmax = 2;
-        av_opt_set(m_jpegContext->priv_data, "q", std::to_string(m_quality).c_str(), 0);
-        if (int err = avcodec_open2(m_jpegContext, jpegCodec, &options) < 0) {
+        av_opt_set(m_jpegEncoderContext->priv_data, "q", std::to_string(m_quality).c_str(), 0);
+        if (int err = avcodec_open2(m_jpegEncoderContext, jpegCodec, &options) < 0) {
             LOG->info("failed create mJPEG encoder {}", AVHelper::av2str(err));
         } else {
-            yuv420_conversion = sws_getContext(frame->width, frame->height, (AVPixelFormat)frame->format,
+            m_yuv420ConversionContext = sws_getContext(frame->width, frame->height, (AVPixelFormat)frame->format,
                 targetWidth, targetHeight, AV_PIX_FMT_YUV420P,
                 SWS_BICUBIC, NULL, NULL, NULL);
         }
     }
-    if (m_jpegContext)
-    {
+    if (m_jpegEncoderContext) {
         AVFrame* dstframe = nullptr;
-        if (yuv420_conversion) {
+        if (m_yuv420ConversionContext) {
             // init conversion
             if (buffer == nullptr || w != targetWidth || h != targetHeight) {
                 if (buffer)
@@ -89,33 +87,32 @@ AVPacket *EncoderJPEG::takeFrame()
 #else
                 av_image_fill_arrays(dstframe->data, dstframe->linesize, buffer, (AVPixelFormat)dstframe->format, dstframe->width, dstframe->height, 1);
 #endif
-                sws_scale(yuv420_conversion, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
+                sws_scale(m_yuv420ConversionContext, frame->data, frame->linesize, 0, frame->height, dstframe->data, dstframe->linesize);
             } else {
+                av_frame_unref(frame);
                 return nullptr;
             }
         } else {
             dstframe = frame;
         }
-        int err = avcodec_send_frame(m_jpegContext, dstframe);
+        int err = avcodec_send_frame(m_jpegEncoderContext, dstframe);
         if (err == 0) {
             err = 0;
             do {
                 AVPacket* p = av_packet_alloc();
-                err = avcodec_receive_packet(m_jpegContext, p);
+                err = avcodec_receive_packet(m_jpegEncoderContext, p);
                 if (err == AVERROR(EAGAIN) || err == AVERROR_EOF) {
-                    av_packet_free(&p);
-                    break;
                 } else if (err < 0) {
                     LOG->warn("Error encoding frame");
-                    av_packet_free(&p);
-                    break;
-                }
-                p->dts = av_rescale_q(p->dts, m_jpegContext->time_base, m_jpegContext->time_base);
-                p->pts = av_rescale_q(p->pts, m_jpegContext->time_base, m_jpegContext->time_base);
+                } else {
+                    p->dts = av_rescale_q(p->dts, m_jpegEncoderContext->time_base, m_jpegEncoderContext->time_base);
+                    p->pts = av_rescale_q(p->pts, m_jpegEncoderContext->time_base, m_jpegEncoderContext->time_base);
 
-                av_frame_unref(dstframe);
-                av_frame_unref(frame);
-                return p;
+                    av_frame_unref(dstframe);
+                    av_frame_unref(frame);
+                    return p;
+                }
+                av_packet_free(&p);
             } while (err >= 0);
         }
         av_frame_unref(dstframe);
@@ -127,4 +124,8 @@ AVPacket *EncoderJPEG::takeFrame()
 EncoderJPEG::~EncoderJPEG()
 {
     delete m_decoder;
+    if (m_jpegEncoderContext)
+        avcodec_free_context(&m_jpegEncoderContext);
+    if (m_yuv420ConversionContext)
+        sws_freeContext(m_yuv420ConversionContext);
 }

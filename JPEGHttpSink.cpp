@@ -42,6 +42,7 @@ Image *JPEGHttpSink::getImage()
                 Exiv2::ImageFactory::open((Exiv2::byte *)frame->data, frame->size);
         // av_packet_unref(&frame);
         if (eximage.get() == 0) {
+            av_packet_unref(frame);
             LOG->warn("Failed get EXIF");
             return nullptr;
         }

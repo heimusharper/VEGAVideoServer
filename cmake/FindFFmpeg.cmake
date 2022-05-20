@@ -1,20 +1,90 @@
-find_path(FFMPEG_INCLUDE_DIR 
-  libavcodec/avcodec.h
+find_path(FFMPEG_INCLUDE_DIRS
+    libavcodec/avcodec.h
   PATHS
     /home/unmanned/ffmpeg-4.2.2/install
-    /usr
     /usr/local
+    /usr
   PATH_SUFFIXES
     include
 )
 
-find_library(NVMPI_LIBRARY nvmpi)
-find_library(AVCODEC_LIBRARY avcodec)
-find_library(AVFORMAT_LIBRARY avformat)
-find_library(AVUTIL_LIBRARY avutil)
-find_library(AVDEVICE_LIBRARY avdevice)
-find_library(SWSCALE_LIBRARY swscale)
-find_library(SWRESAMPLE_LIBRARY swresample)
+
+FIND_LIBRARY(NVMPI_LIBRARY
+    NAMES
+        nvmpi
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(AVCODEC_LIBRARY
+    NAMES
+        avcodec
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(AVFORMAT_LIBRARY
+    NAMES
+        avformat
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(AVUTIL_LIBRARY
+    NAMES
+        avutil
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(AVDEVICE_LIBRARY
+    NAMES
+        avdevice
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(SWSCALE_LIBRARY
+    NAMES
+        swscale
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
+
+FIND_LIBRARY(SWRESAMPLE_LIBRARY
+    NAMES
+        swresample
+    PATHS
+        /lib
+        /usr/local/lib64
+        /usr/local/lib
+        /usr/lib
+    PATH_SUFFIXES lib
+)
 
 SET(AV_LIBS
     ${AVCODEC_LIBRARY}
@@ -54,4 +124,4 @@ ENDIF()
 #set(FFMPEG_LIB ${FFMPEG_LIB} "/home/unmanned/ffmpeg-4.2.2/install/lib/libswresample.a")
 #set(FFMPEG_LIB ${FFMPEG_LIB} "/home/unmanned/ffmpeg-4.2.2/install/lib/libswscale.a")
 #set(FFMPEG_LIB ${FFMPEG_LIB} "/home/unmanned/ffmpeg-4.2.2/install/lib/libavutil.a")
-message("find in ${FFMPEG_LIB} ${FFMPEG_INCLUDE_DIR}")
+message("find in ${AV_LIBS} ${FFMPEG_INCLUDE_DIR}")

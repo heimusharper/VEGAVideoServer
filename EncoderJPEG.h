@@ -47,8 +47,8 @@ private:
     Decoder *m_decoder = nullptr;
     FileSave *m_encoder = nullptr;
     // decoder
-    AVCodecContext *m_jpegContext = nullptr;
-    SwsContext* yuv420_conversion = nullptr;
+    AVCodecContext* m_jpegEncoderContext = nullptr;
+    SwsContext* m_yuv420ConversionContext = nullptr;
 };
 
 #endif // FFH264DECODERINSTANCE_H

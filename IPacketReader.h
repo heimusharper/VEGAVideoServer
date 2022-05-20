@@ -23,12 +23,19 @@ public:
     }
     void flushPacket(AVPacket *pkt)
     {
-        if (m_packets.write_available() > 0) {
-            AVPacket *newp = av_packet_alloc();
-            newp->pts = pkt->pts;
-            newp->dts = pkt->dts;
-            av_packet_ref(newp, pkt);
-            m_packets.push(newp);
+        try {
+            if (m_packets.write_available() == 0) {
+                av_packet_unref(m_packets.front());
+                m_packets.pop();
+            }
+            if (m_packets.write_available() > 0) {
+                AVPacket* newp = av_packet_alloc();
+                newp->pts = pkt->pts;
+                newp->dts = pkt->dts;
+                av_packet_ref(newp, pkt);
+                m_packets.push(newp);
+            }
+        } catch (std::exception* e) {
         }
     }
 
