@@ -62,7 +62,7 @@ AVPacket *EncoderJPEG::takeFrame()
         }
     }
     if (m_jpegEncoderContext) {
-        AVFrame* dstframe = nullptr;
+        AVFrame* dstframe = av_frame_alloc();
         if (m_yuv420ConversionContext) {
             // init conversion
             if (buffer == nullptr || w != targetWidth || h != targetHeight) {
@@ -78,7 +78,6 @@ AVPacket *EncoderJPEG::takeFrame()
                 h = targetHeight;
             }
             if (buffer) {
-                dstframe = av_frame_alloc();
                 dstframe->format = AV_PIX_FMT_YUV420P;
                 dstframe->width = targetWidth;
                 dstframe->height = targetHeight;
@@ -93,7 +92,7 @@ AVPacket *EncoderJPEG::takeFrame()
                 return nullptr;
             }
         } else {
-            dstframe = frame;
+            av_frame_ref(dstframe, frame);
         }
         int err = avcodec_send_frame(m_jpegEncoderContext, dstframe);
         if (err == 0) {
