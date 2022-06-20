@@ -34,7 +34,7 @@ void FileSave::run()
 
     while(!m_stop.load())
     {
-        int sleepTime = 10;
+        int sleepTime = 100;
         if (!m_context) {
             sleepTime = 1000000;
             nowTime = MavContext::instance().time() / 1000000.;

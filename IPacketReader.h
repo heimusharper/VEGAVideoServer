@@ -18,6 +18,7 @@ public:
                 return pkt;
             }
         } catch (std::exception *e) {
+            LOG->warn("Failed take pkt {}", e->what());
         }
         return nullptr;
     }
@@ -36,13 +37,14 @@ public:
                 m_packets.push(newp);
             }
         } catch (std::exception* e) {
+            LOG->warn("Failed flush pkt {}", e->what());
         }
     }
 
     virtual void onCreateStream(AVStream *stream) = 0;
 
 private:
-    boost::lockfree::spsc_queue<AVPacket*, boost::lockfree::capacity<100>> m_packets;
+    boost::lockfree::spsc_queue<AVPacket*, boost::lockfree::capacity<10>> m_packets;
 };
 
 #endif // IPACKETREADER_H

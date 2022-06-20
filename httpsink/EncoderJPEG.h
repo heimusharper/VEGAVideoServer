@@ -2,7 +2,6 @@
 #define ENCODERJPEG_H
 
 #include "Decoder.h"
-#include "FileSave.h"
 #include "helper.h"
 
 class EncoderJPEG
@@ -44,8 +43,7 @@ private:
 
     float m_scaleFactor = 1;
 
-    Decoder *m_decoder = nullptr;
-    FileSave *m_encoder = nullptr;
+    Decoder* m_decoder = nullptr;
     // decoder
     AVCodecContext* m_jpegEncoderContext = nullptr;
     SwsContext* m_yuv420ConversionContext = nullptr;

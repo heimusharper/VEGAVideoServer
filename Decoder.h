@@ -4,15 +4,14 @@
 #if defined (USE_NVMPI)
 #include <nvmpi.h>
 #endif
-#include "helper.h"
-#include <iostream>
-#include <thread>
-#include "MavContext.h"
-#include <boost/lockfree/spsc_queue.hpp>
-#include <atomic>
-#include <mutex>
 #include "IPacketReader.h"
+#include "helper.h"
+#include <atomic>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <iostream>
+#include <mutex>
 #include <queue>
+#include <thread>
 
 class Decoder : public IPacketReader
 {

@@ -88,29 +88,33 @@ SET(HEADERS_LIST
     log.h
     helper.h
     Decoder.h
-    EncoderJPEG.h
-    IPacketReader.h
-    JPEGHttpSink.h
-    VideoSource.h
-    HTTPServer.h
-    FileSave.h
-
     MavContext.h
-    MavlinkParser.h
-    MavUDP.h
+    IPacketReader.h
+    VideoSource.h
+
+    filesink/FileSave.h
+
+    httpsink/EncoderJPEG.h
+    httpsink/JPEGHttpSink.h
+    httpsink/HTTPServer.h
+
+    telem/MavlinkParser.h
+    telem/MavUDP.h
 
     )
 SET(SOURCES_LIST
     Decoder.cpp
-    EncoderJPEG.cpp
-    JPEGHttpSink.cpp
-    VideoSource.cpp
-    HTTPServer.cpp
-    FileSave.cpp
-
     MavContext.cpp
-    MavlinkParser.cpp
-    MavUDP.cpp
+    VideoSource.cpp
+
+    filesink/FileSave.cpp
+
+    httpsink/EncoderJPEG.cpp
+    httpsink/JPEGHttpSink.cpp
+    httpsink/HTTPServer.cpp
+
+    telem/MavlinkParser.cpp
+    telem/MavUDP.cpp
 
     main.cpp
     )

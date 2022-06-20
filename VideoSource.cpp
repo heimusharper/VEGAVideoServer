@@ -68,10 +68,10 @@ void VideoSource::run()
             if (m_sync)
                 start = boost::chrono::high_resolution_clock::now();
             AVPacket *pkt = av_packet_alloc();
-            int sleepTime = 10;
+            int sleepTime = 100;
             int err = av_read_frame(input_format_ctx, pkt);
             if (err >= 0 && pkt->stream_index == videoStreamIndex) {
-                if (m_sync && pkt->pts != AV_NOPTS_VALUE) {
+                /*if (m_sync && pkt->pts != AV_NOPTS_VALUE) {
                     AVRational msecondbase = { 1, 1000 };
                     //int f_number = pkt->pts;
                     int f_time = av_rescale_q(pkt->pts, input_format_ctx->streams[videoStreamIndex]->time_base, msecondbase);
@@ -82,12 +82,12 @@ void VideoSource::run()
                     int workTime = boost::chrono::duration_cast<boost::chrono::microseconds>(stop - start).count();
                     sleepTime -= workTime;
                 } else {
-                }
+                }*/
                 for (auto x : m_readers)
                     x->flushPacket(pkt);
             }
-            av_packet_unref(pkt);
-            usleep((sleepTime > 0) ? sleepTime : 10);
+            av_packet_free(&pkt);
+            usleep(sleepTime);
         }
     }
     if (input_format_ctx)
