@@ -33,8 +33,7 @@ void MavContext::setTime(int64_t newTime)
 
 std::string MavContext::header() const
 {
-    return fmt::format(std::locale("en_US.UTF-8"),
-                       "Ширина сенсора: {:.2f}\r\n"
+    return fmt::format("Ширина сенсора: {:.2f}\r\n"
                        "Высота сенсора: {:.2f}\r\n"
                        "Фокусное расстояние: {:.2f}\r\n"
                        "Кроп фактор матрицы: {:.2f}\r\n"
@@ -50,7 +49,7 @@ std::string MavContext::header() const
 std::string MavContext::line(int64_t timeMS, tm time) const
 {
     LOG->debug("INF");
-    return fmt::format(std::locale("en_US.UTF-8"), "{}\t{}-{}-{} {}:{}:{}\t{:.8f}\t{:.8f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.1f}\t{:.1f}\t{:.1f}\t0\t{:.1f}\t{:.1f}\t{}\r\n",
+    return fmt::format("{}\t{}-{}-{} {}:{}:{}\t{:.8f}\t{:.8f}\t{:.3f}\t{:.3f}\t{:.3f}\t{}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.1f}\t{:.1f}\t{:.1f}\t0\t{:.1f}\t{:.1f}\t{}\r\n",
                        timeMS,
                        time.tm_year,
                        time.tm_mon,
