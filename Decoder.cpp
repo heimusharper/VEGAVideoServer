@@ -22,6 +22,9 @@ void Decoder::onCreateStream(AVStream *stream)
 #if defined (USE_NVMPI)
     LOG->info("codec ID={} h264 ID={}", stream->codec->codec_id, (int)AV_CODEC_ID_H264);
     if (stream->codec->codec_id == AV_CODEC_ID_H264)
+#elif defined (USE_VDPAU)
+	LOG->info("codec ID={} h264 ID={}", stream->codec->codec_id, (int)AV_CODEC_ID_H264);
+	if (stream->codec->codec_id == AV_CODEC_ID_H264)
 #endif
     {
         AVCodecParameters *codparam = avcodec_parameters_alloc();
@@ -29,8 +32,11 @@ void Decoder::onCreateStream(AVStream *stream)
             AVDictionary *options = nullptr;
             //av_dict_set(&options, "fflags", "nobuffer", 0);
 #if defined (USE_NVMPI)
-            LOG->info("Create H264 decoder...");
+            LOG->info("Create H264 NVMPI decoder...");
             AVCodec *acodec = avcodec_find_decoder_by_name("h264_nvmpi");
+#elif defined (USE_VDPAU)
+            LOG->info("Create H264 VDPAU decoder");
+			AVCodec *acodec = avcodec_find_decoder_by_name("h264_vdpau");
 #else
             const AVCodec* acodec = avcodec_find_decoder((AVCodecID)stream->codecpar->codec_id);
 #endif
@@ -38,6 +44,9 @@ void Decoder::onCreateStream(AVStream *stream)
             avcodec_parameters_to_context(m_videoCodecContext, codparam);
 
 #if defined (USE_NVMPI)
+
+#elif defined (USE_VDPAU)
+
 #else
             if (stream->codecpar->codec_id == AV_CODEC_ID_H264) {
                 av_opt_set(m_videoCodecContext->priv_data, "preset", m_preset.c_str(), 0);

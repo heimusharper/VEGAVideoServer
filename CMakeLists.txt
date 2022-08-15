@@ -75,7 +75,11 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/c_library_v2)
 SET(USE_RTSP_AUTHENTICATION False CACHE BOOL "")
 
 IF (${USE_NVMPI})
-	#    add_definitions(-DUSE_NVMPI)
+	add_definitions(-DUSE_NVMPI)
+ENDIF()
+
+IF (${USE_VDPAU})
+	add_definitions(-DUSE_VDPAU)
 ENDIF()
 
 INCLUDE_DIRECTORIES(${Spdlog_INCLUDE_DIRS})
